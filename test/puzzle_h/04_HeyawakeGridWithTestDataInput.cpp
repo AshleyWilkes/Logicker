@@ -54,6 +54,4 @@ namespace {
     auto areaIdRange = puzzle.unique_values<AreaId>();
     ASSERT_EQ( areaIdRange.size(), 7 );
   }
-}
-
-
+}//namespace

@@ -1,3 +1,10 @@
+# vim swap files
+*.swo
+*.swp
+
+# build directory
+build/*
+
 # Prerequisites
 *.d
 
@@ -30,3 +37,9 @@
 *.exe
 *.out
 *.app
+
+#ctags file
+tags
+
+#doxygen directory
+doxygen/*

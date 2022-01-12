@@ -3,6 +3,7 @@
 
 #include "puzzle.h"
 #include "../data_input_for_tests.h"
+#include "Transformation/Contents.h"
 
 namespace {
   //postup:
@@ -19,9 +20,13 @@ namespace {
     using Root_ = SlotPart<DefaultGridId>;
     using Width_ = Slot<Root_, Width, Count, Scalar>;
     using Slots_ = Slots<Width_>;
-    
+    using SlotsWithParts_ = Slots<Root_, Width_>;
+    using SlotsTypesTree = typename SlotTreeImpl<types_tree::__detail::types_tree, std::tuple<>, 
+          std::tuple<>, SlotsWithParts_>::value::slots_types_tree;
+
   //- vytvorit grid, ktery umi obsahovat tree data 
-    GridImpl<Slots_> grid;
+    using GridI = GridImpl<Slots_>;
+    GridI grid;
     using WidthInputData = SlotInputData<Width, Singleton, Count>;
     using TestDataInputT = TestDataInput<WidthInputData>;
 
@@ -30,15 +35,15 @@ namespace {
     grid << testData;
 
   //- pomoci Contents vytvorit range, odpovidajici datum v gridu
-    auto contents = Contents{}( grid );
+    using ContentsV = ContentsView<GridImpl<Slots_>, SlotsTypesTree>;
+    ContentsV gridView{ &grid };
+    auto contents = Contents{}( gridView );
+    ASSERT_EQ( contents.begin() != contents.end(), true );
 
   //- overit, ze range obsahuje ocekavana data
-    struct DataT {
-      Singleton defaultGridId;
-      Count width;
-    };
-    std::set<DataT> expectedData{ { Singleton{}, 42 } };
-    std::set<DataT> actualData{ contents };
+    using DataT = typename Contents::DataT<ContentsV>;
+    std::set<DataT> expectedData{ std::make_tuple<>( types_tree::__detail::root_value{}, Singleton{}, Count{ 42 } ) };
+    std::set<DataT> actualData{ contents.begin(), contents.end() };
     ASSERT_EQ( actualData, expectedData );
   }
 }//namespace

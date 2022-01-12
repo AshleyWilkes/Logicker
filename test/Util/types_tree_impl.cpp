@@ -45,6 +45,14 @@ namespace {
     static_assert( std::is_same_v< typename tree::get_roots, std::tuple<>> );
   }
 
+  TEST( types_tree_impl, subtree ) {
+    using tree = typename types_tree::add< node<1> >::add< node<2>, name<1> >
+      ::add< node<3>, name<2> >::add< node<4>, name<3> >::add< node<5>, name<4> >;
+    using subtree = typename tree::subtree< name< 4 > >;
+    using expected = typename types_tree::add< node<4> >::add< node<5>, name<4> >;
+    static_assert( std::is_same_v<subtree, expected> );
+  }
+
   struct brutal_pruner {
     template<typename>
     static constexpr bool prune = true;

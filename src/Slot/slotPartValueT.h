@@ -22,6 +22,7 @@ class Count : public SlotPartValueT { //non-negative integer including 0; [ 0 ..
   private:
     int value_;
   public:
+    Count() = default;
     Count( int value ) : value_{ value } {}
     operator int() const { return value_; }
 };
@@ -39,4 +40,18 @@ class BlackOrWhite : public SlotPartValueT { //boolean value: false - white, tru
   public:
     BlackOrWhite( bool value ) : value_{ value } {}
     operator bool() const { return value_; }
+};
+
+template<typename T>
+struct Set {
+  private:
+    std::set<T> set_;
+  public:
+    using ElementT = T;
+    std::set<T> toSet() { return set_; }
+};
+
+template<typename T>
+struct Pair{
+  using ElementT = T;
 };

@@ -15,6 +15,7 @@ template<CSlotPartName Name_>
 class SlotPart<Name_> : public SlotPartT{
   public:
     using Name = Name_;
+    using ValueT = Singleton;
 };
 
 template<CSlotPartName Name_, CSlotPartValueT ValueT_>
@@ -51,6 +52,7 @@ class Slot<KeyName_, ValueName, ValueT, ImplT> : SlotT {
 template<CSlotPart KeySlotPart, CSlotPartName ValueName, CSlotPartValueT ValueT>
 class Slot<KeySlotPart, ValueName, ValueT> : SlotT {
   public:
+    using KeyName = typename KeySlotPart::Name;
     using KeyPart = KeySlotPart;
     using ValuePart = SlotPart<ValueName, ValueT>;
 };
@@ -58,6 +60,7 @@ class Slot<KeySlotPart, ValueName, ValueT> : SlotT {
 template<CSlotPart KeySlotPart, CSlotPartName ValueName, CSlotPartValueT ValueT, CSlotPartImplT ImplT>
 class Slot<KeySlotPart, ValueName, ValueT, ImplT> : SlotT {
   public:
+    using KeyName = typename KeySlotPart::Name;
     using KeyPart = KeySlotPart;
     using ValuePart = SlotPart<ValueName, ValueT, ImplT>;
 };
@@ -65,6 +68,7 @@ class Slot<KeySlotPart, ValueName, ValueT, ImplT> : SlotT {
 template<CSlotPart KeySlotPart_, CSlotPart ValueSlotPart_>
 class Slot<KeySlotPart_, ValueSlotPart_> : SlotT {
   public:
+    using KeyName = typename KeySlotPart_::Name;
     using KeyPart = KeySlotPart_;
     using ValuePart = ValueSlotPart_;
 };

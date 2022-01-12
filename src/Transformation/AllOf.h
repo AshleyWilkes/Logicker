@@ -10,7 +10,7 @@ namespace Logicker::Transformation {
   //musi byt splneno, ze Trans::OutputT<Arg::ElementT> je bool; takto zapsana podminka
   //  overuje zaroven i to, ze Arg je Set<Trans::InputT>, pokud ovsem Trans splnuje svuj kontrakt,
   //  namely obsahuje OutputT<Arg> pouze pro Argy vhodneho typu
-  requires( std::is_same_v< typename Trans::OutputT< typename Arg::ElementT >, bool > )
+  requires( std::is_same_v< typename Trans::template OutputT< typename Arg::ElementT >, bool > )
   struct AllOfImpl< Trans, Arg > {
     using OutputT = bool;
   };

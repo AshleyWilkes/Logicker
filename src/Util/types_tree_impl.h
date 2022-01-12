@@ -20,6 +20,10 @@ namespace types_tree::__detail {
   using root_ = std::tuple<root_name, root_ancestor, root_value>;
   using root_node_ = std::tuple<root_>;
 
+  inline bool operator<( const root_value&, const root_value& ) { return false; }
+  inline bool operator==( const root_value&, const root_value& ) { return true; }
+  inline std::ostream& operator<<( std::ostream& os, const root_value& ) { os << "root_value"; return os; }
+
   template<typename...>
   struct types_tree_impl;
 
@@ -94,7 +98,7 @@ namespace types_tree::__detail {
     template<typename Name>
     struct GetNode {
       using ImplementationNode = typename FindNode<Name, KnownImplementationNodes...>::value;
-      using type = MakeOutputNode<ImplementationNode>::type;
+      using type = typename MakeOutputNode<ImplementationNode>::type;
     };
 
     template<typename Name>
@@ -106,7 +110,7 @@ namespace types_tree::__detail {
 
       template<typename CurrentNode, typename... FurtherNodes>
       struct HasName<std::tuple<CurrentNode, FurtherNodes...>> {
-        using CurrentNodeName = std::tuple_element<0, CurrentNode>::type;
+        using CurrentNodeName = typename std::tuple_element<0, CurrentNode>::type;
         static constexpr bool value = std::is_same_v< CurrentNodeName, Name > 
           || HasName<std::tuple<FurtherNodes...>>::value;
       };
@@ -117,9 +121,9 @@ namespace types_tree::__detail {
     template<typename Name>
     struct GetAncestor {
       using ImplementationNode = typename FindNode<Name, KnownImplementationNodes...>::value;
-      using AncestorName = std::tuple_element<1, ImplementationNode>::type;
+      using AncestorName = typename std::tuple_element<1, ImplementationNode>::type;
       using AncestorImplementationNode = typename FindNode<AncestorName, KnownImplementationNodes...>::value;
-      using type = MakeOutputNode<AncestorImplementationNode>::type;
+      using type = typename MakeOutputNode<AncestorImplementationNode>::type;
     };
 
     template<typename Name>
@@ -133,7 +137,7 @@ namespace types_tree::__detail {
       };
     
       using NamedImplementationNode = typename GetNode<Name>::ImplementationNode;
-      using type = FromImplementationNode<NamedImplementationNode>::type;
+      using type = typename FromImplementationNode<NamedImplementationNode>::type;
     };
 
     template<typename...>
@@ -234,7 +238,7 @@ namespace types_tree::__detail {
     struct RemoveImplementationNode<std::tuple<
       Name, AscendantName, Value, CurrentDescendantName, FurtherDescendantNames...>> {
       using Removed1 = typename Remove<CurrentDescendantName>::type;
-      using type = typename Removed1::RemoveImplementationNode<
+      using type = typename Removed1::template RemoveImplementationNode<
         std::tuple<Name, AscendantName, Value,FurtherDescendantNames...>>::type;
     };
 
@@ -247,6 +251,69 @@ namespace types_tree::__detail {
     struct Remove {
       using NamedImplementationNode = typename GetNode<Name>::ImplementationNode;
       using type = typename RemoveImplementationNode<NamedImplementationNode>::type;
+    };
+
+    template<typename NewTree, typename Node, typename... AncestorName>
+    struct AddToNewTree {
+      //using NodeName = typename std::tuple_element<0, Node>::type;
+      //using NodeValue = typename std::tuple_element<2, Node>::type;
+      //using type = typename NewTree::template Add<std::pair<NodeName, NodeValue>, AncestorName...>::type;
+      using type = typename NewTree::template Add<Node, AncestorName...>::type;
+    };
+
+    /*template<typename, typename, typename, typename>
+    struct AddRemainingDescendantsToNewTree;
+
+    template<typename NewTree, typename AncestorName, typename... ProcessedDescendants, 
+      typename CurrentDescendant, typename... FurtherDescendants>
+    struct AddRemainingDescendantsToNewTree<NewTree, AncestorName, std::tuple<ProcessedDescendants...>,
+      std::tuple<CurrentDescendant, FurtherDescendants...>> {
+        using NewTreeAfterCurrentAdd = 
+          typename AddToNewTree<NewTree, CurrentDescendant, AncestorName>::type;
+        using type = typename AddRemainingDescendantsToNewTree<NewTreeAfterCurrentAdd,
+              AncestorName, std::tuple<ProcessedDescendants..., CurrentDescendant>,
+              std::tuple<FurtherDescendants...>>::type;
+    };*/
+
+    template<typename, typename>
+    struct AddDescendantsToNewTree;
+
+    template<typename...>
+    struct AddToNewTreeRecursive;
+
+    template<typename NewTree, typename FirstDescendant, typename... Descendants>
+    struct AddDescendantsToNewTree<NewTree, std::tuple<FirstDescendant, Descendants...>> {
+      using FirstDescendantName = std::tuple_element_t<0, FirstDescendant>;
+      using Ancestor = typename GetAncestor<FirstDescendantName>::type;
+      using AncestorName = std::tuple_element_t<0, Ancestor>;
+      using NewTreeWithFirstDescendant = typename 
+        AddToNewTreeRecursive<NewTree, FirstDescendant, AncestorName>::type;
+      using type = typename AddDescendantsToNewTree<NewTreeWithFirstDescendant, 
+            std::tuple<Descendants...>>::type;
+    };
+
+    template<typename NewTree>
+    struct AddDescendantsToNewTree<NewTree, std::tuple<>> {
+      using type = NewTree;
+    };
+
+    template<typename NewTree, typename Node, typename... AncestorName>
+    struct AddToNewTreeRecursive<NewTree, Node, AncestorName...> {
+      //pridat do tree NodeName jako potomka AncestorName
+      //zavolat sam sebe nad kazdym descendantem NodeName
+      using NewTreeWithNode = typename AddToNewTree<NewTree, Node, AncestorName...>::type;
+      using NodeName = std::tuple_element_t<0, Node>;
+      using type = typename AddDescendantsToNewTree<NewTreeWithNode, 
+            typename GetDescendants<NodeName>::type>::type;
+    };
+
+    template<typename Name>
+    struct Subtree {
+      //vytvorit novej strom
+      //pridat node Name pomoci AddToNewTree
+      using Node = typename GetNode<Name>::type;
+      //zavolat AddToNewTreeRecursive nad kazdym descendantem Name
+      using type = typename AddToNewTreeRecursive<types_tree, Node>::type;
     };
 
     template<typename...>
@@ -263,9 +330,9 @@ namespace types_tree::__detail {
     template<typename Pruner, typename CurrentImplementationNode, typename... FurtherImplementationNodes>
     requires( Pruner::template prune<CurrentImplementationNode> )
     struct PruneImpl<Pruner, std::tuple<CurrentImplementationNode, FurtherImplementationNodes...>> {
-      using CurrentName = std::tuple_element<0, CurrentImplementationNode>::type;
+      using CurrentName = typename std::tuple_element<0, CurrentImplementationNode>::type;
       using Remove1 = typename Remove<CurrentName>::type;
-      using type = typename Remove1::prune<Pruner>;
+      using type = typename Remove1::template prune<Pruner>;
     };
 
     template<typename Pruner, typename CurrentImplementationNode, typename... FurtherImplementationNodes>
@@ -280,26 +347,29 @@ namespace types_tree::__detail {
     };
 
     template<typename... InputNodes>
-    using add = Add<InputNodes...>::type;
+    using add = typename Add<InputNodes...>::type;
 
     template<typename Name>
-    using get_node = GetNode<Name>::type;
+    using get_node = typename GetNode<Name>::type;
 
     template<typename Name>
     static constexpr bool has_node = HasNode<Name>::value;
 
     template<typename Name>
-    using get_ancestor = GetAncestor<Name>::type;
+    using get_ancestor = typename GetAncestor<Name>::type;
 
     template<typename Name>
-    using get_descendants = GetDescendants<Name>::type;
+    using get_descendants = typename GetDescendants<Name>::type;
 
     using get_roots = get_descendants<root_name>; 
 
     template<typename Name>
-    using remove = Remove<Name>::type;
+    using remove = typename Remove<Name>::type;
+
+    template<typename Name>
+    using subtree = typename Subtree<Name>::type;
 
     template<typename Pruner>
-    using prune = Prune<Pruner, std::tuple<KnownImplementationNodes...>>::type;
+    using prune = typename Prune<Pruner, std::tuple<KnownImplementationNodes...>>::type;
   };
 }//namespace types_tree::__detail

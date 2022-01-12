@@ -2,6 +2,7 @@
 
 #include "Slot/slot.h"
 #include "Topology/grid.h"
+#include "Transformation/AllOf.h"
 #include "Util/finder.h"
 
 template<typename...>
@@ -40,22 +41,43 @@ class Narrow {
 template<typename...>
 class Transform;
 
-template<typename>
-class CountOf;
+template<typename SlotName, typename ValueToCount>
+struct CountOf {
+  template<typename>
+  using OutputT = int;
+};
 
 template<int>
-class Constant;
+struct Constant{
+  template<typename>
+  using OutputT = int;
+};
 
-class Equal;
+struct LessOrEqual{
+  template<typename, typename>
+  using OutputT = bool;
+};
 
-template<typename LHS, typename OP, typename RHS>
-class Assert;
+struct Equal{
+  template<typename, typename>
+  using OutputT = bool;
+};
+
+template<typename...>
+struct ConstraintTransformationsBuilder;
+
+template<typename... Transforms, typename Assert>
+struct ConstraintTransformationsBuilder<Transform<Transforms...>, Assert> {
+  using type = Transform<Transforms..., Logicker::Transformation::AllOf<Assert>>;
+};
 
 template<typename Transform_, typename Assert_>
 class Constraint {
   public:
     using Transform = Transform_;
     using Assert = Assert_;
+    using Transformations = 
+      typename ConstraintTransformationsBuilder<Transform_, Assert_>::type;
 };
 
 template<typename... Ts>

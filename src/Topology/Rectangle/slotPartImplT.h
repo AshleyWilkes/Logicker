@@ -23,6 +23,11 @@ class RectangleCenterFieldsImpl {
       return false;
     }
 
+    const std::optional<std::vector<std::optional<Index>>>
+    get( const Singleton& ) const {
+      return vector_;
+    }
+
     const auto&
     values() const {
       return vector_;
