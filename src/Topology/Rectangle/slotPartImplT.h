@@ -65,8 +65,16 @@ class RectangleRowIdImpl {
       return true;
     }
 
-    const std::optional<Index>& 
-    get( const Index& key ) const { return map_.at(key); }
+    std::optional<Index> 
+    get( const Index& key ) const { 
+      if ( map_.contains( key ) ) {
+        std::cout << "YES key " << key << " in RectangleRowIdImpl.map_\n";
+        return map_.at(key); 
+      } else {
+        std::cout << "No key " << key << " in RectangleRowIdImpl.map_\n";
+        return std::optional<Index>{};
+      }
+    }
 };
 
 class RectangleRowId : public SlotPartImplT {
@@ -95,8 +103,16 @@ class RectangleColumnIdImpl {
       return true;
     }
 
-    const std::optional<Index>&
-    get( const Index& key ) const { return map_.at(key); }
+    std::optional<Index>
+    get( const Index& key ) const {  
+      if ( map_.contains( key ) ) {
+        std::cout << "YES key " << key << " in RectangleColumnIdImpl.map_\n";
+        return map_.at(key); 
+      } else {
+        std::cout << "No key " << key << " in RectangleColumnIdImpl.map_\n";
+        return std::optional<Index>{};
+      }
+    }
 };
 
 class RectangleColumnId : public SlotPartImplT {

@@ -100,7 +100,7 @@ class PuzzleImpl {
     using Constraints_ = typename ConstraintsSet<PuzzleType, 
           ContentsView<GridI, SlotsTypesTree>>::Constraints;
 
-    ContentsView<GridI, SlotsTypesTree> getContents() const {
+    ContentsView<GridI, SlotsTypesTree> getContentsView() const {
       return { &grid };
     }
 };

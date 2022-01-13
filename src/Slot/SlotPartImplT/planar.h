@@ -7,18 +7,27 @@
 template<typename, typename>
 class PlanarHeightImpl {
   private:
-    std::optional<Count> height_;
+    std::vector<std::optional<Count>> valueVector;
   public:
     template<typename Puzzle, typename DataPresenter>
     bool tryInput( const Puzzle& puzzle, const DataPresenter& ) {
-      if ( height_.has_value() ) { return false; }
+      if ( !valueVector.empty() && getValue().has_value() ) { return false; }
 
       auto size = puzzle.template get<Size>();
-      height_ = std::get<1>( *size );
+      valueVector.push_back( std::get<1>( ( *size ).getValue() ) );
       return true;
     }
 
-    const auto& get( const Singleton& ) const { return height_; }
+    std::optional<Count> getValue() const {
+      if ( valueVector.empty() ) throw 1;
+      return *(valueVector.begin());
+    }
+
+    auto get( const Singleton& ) const { return getValue(); }
+
+    auto values() const {
+      return std::ranges::subrange{ valueVector };
+    }
 };
 
 class PlanarHeight : public SlotPartImplT {
@@ -30,18 +39,27 @@ class PlanarHeight : public SlotPartImplT {
 template<typename, typename>
 class PlanarWidthImpl {
   private:
-    std::optional<Count> width_;
+    std::vector<std::optional<Count>> valueVector;
   public:
     template<typename Puzzle, typename DataPresenter>
     bool tryInput( const Puzzle& puzzle, const DataPresenter& ) {
-      if ( width_.has_value() ) { return false; }
+      if ( !valueVector.empty() && getValue().has_value() ) { return false; }
 
       auto size = puzzle.template get<Size>();
-      width_ = std::get<0>( *size );
+      valueVector.push_back( std::get<0>( ( *size ).getValue() ) );
       return true;
     }
 
-    const auto& get( const Singleton& ) const { return width_; }
+    std::optional<Count> getValue() const {
+      if ( valueVector.empty() ) throw 1;
+      return *(valueVector.begin());
+    }
+
+    auto get( const Singleton& ) const { return getValue(); }
+
+    auto values() const {
+      return std::ranges::subrange{ valueVector };
+    }
 };
 
 class PlanarWidth : public SlotPartImplT {
@@ -53,19 +71,28 @@ class PlanarWidth : public SlotPartImplT {
 template<typename KeySlotPart, typename ValueSlotPart>
 class PlanarSizeImpl {
   private:
-    std::optional<std::pair<Count, Count>> size_;
+    std::vector<std::optional<CountPair>> valueVector;
   public:
     template<typename Puzzle, typename DataInput>
     bool tryInput( const Puzzle&, const DataInput& dataInput ) {
-      if ( size_.has_value() ) { return false; }
+      if ( !valueVector.empty() && getValue().has_value() ) { return false; }
 
       const auto& slotInput = dataInput.template getSlotInput<KeySlotPart, ValueSlotPart>().value();
-      size_ = std::pair<Count, Count>{ 
-        slotInput.get( Singleton{} ).value(), slotInput.get( Singleton{} ).value() };
+      valueVector.push_back( CountPair{ std::make_pair<Count, Count>(
+        slotInput.get( Singleton{} ).value(), slotInput.get( Singleton{} ).value() ) } );
       return true;
     }
 
-    const auto& get( const Singleton& ) const { return size_; }
+    std::optional<CountPair> getValue() const {
+      if ( valueVector.empty() ) throw 1;
+      return *(valueVector.begin());
+    }
+
+    auto get( const Singleton& ) const { return getValue(); }
+
+    auto values() const {
+      return std::ranges::subrange{ valueVector };
+    }
 };
 
 class PlanarSize : public SlotPartImplT {

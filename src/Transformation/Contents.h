@@ -41,29 +41,28 @@ struct ContentsValue<ContentsView<Grid, InputTree>> {
     using Values = typename TreeToTuple<InputTree, 2>::value;
 
     template<typename Name>
-    struct NameToValueT {
-      static constexpr size_t Index = tuple_type_to_index_v<Name, Names>;
-      using type = typename std::tuple_element_t<Index, Values>;
+    struct NameToIndex {
+      static constexpr size_t value = tuple_type_to_index_v<Name, Names>;
     };
 
     template<typename Name>
-    using NameToValueT_t = typename NameToValueT<Name>::type;
+    static constexpr size_t NameToIndex_v = NameToIndex<Name>::value;
   private:
     Values values; 
   public:
     ContentsValue() = default;
     ContentsValue( const Values& values_ ) : values{ values_ }{}
 
-    template<typename Name, typename ValueT=NameToValueT_t<Name>>
-    requires( std::is_same_v<ValueT, NameToValueT_t<Name>> )
+    template<typename Name, size_t Index = NameToIndex_v<Name>, 
+        typename ValueT=std::tuple_element_t<Index, Values>>
     void set( const ValueT& value ) {
-      std::get<ValueT>( values ) = value;
+      std::get<Index>( values ) = value;
     }
 
-    template<typename Name, typename ValueT=NameToValueT_t<Name>>
-    requires( std::is_same_v<ValueT, NameToValueT_t<Name>> )
+    template<typename Name, size_t Index = NameToIndex_v<Name>, 
+        typename ValueT=std::tuple_element_t<Index, Values>>
     ValueT get() {
-      return std::get<ValueT>();
+      return std::get<Index>( values );
     }
 
     friend bool operator<( const ContentsValue& lhs, const ContentsValue& rhs ) {
@@ -114,26 +113,52 @@ struct InnerIterator<SlotPart, ContentsView<Grid, InputTree>> {
   using SubTree = typename InputTree::template subtree<SlotName>;
   using GridView = ContentsView<Grid, InputTree>;
   //using IteratorT = decltype( std::declval<GridView>().get_grid_p()->template values<SlotName>().begin() );
+  using ValuesT = decltype( std::declval<Grid>().template values<SlotName>() );
   using IteratorT = decltype( std::declval<Grid>().template values<SlotName>().begin() );
   using SentinelT = decltype( std::declval<Grid>().template values<SlotName>().end() );
-  const Grid* grid_p;
-  IteratorT begin, current;
-  SentinelT end;
+  private: 
+    const Grid* grid_p;
+    ValuesT values_;
+    IteratorT /*begin,*/ current_;
+    //SentinelT end;
+  public:
 
   InnerIterator() = default;
   InnerIterator( const GridView& grid ) : grid_p{ grid.get_grid_p() }, 
-      begin{ grid_p->template values<SlotName>().begin() }, current{ begin }, 
-      end{ grid_p->template values<SlotName>().end() } {}
-
-  friend bool operator==( const InnerIterator& lhs, const InnerIterator& rhs ) {
-    return lhs.current == rhs.current && lhs.begin == rhs.begin && lhs.end == rhs.end;
+      values_{ grid_p->template values<SlotName>() }, current_{ values_.begin() } {
+      //begin{ grid_p->template values<SlotName>().begin() }, current{ begin }, 
+      //end{ grid_p->template values<SlotName>().end() } {
+    std::cout << "Initializing InnerIterator for " << typeid(SlotName).name() << "(size " 
+      << values_.size() << "): ";
+    /*while ( current_ != values_.end() ) {
+      std::cout << **current_ << ", ";
+      ++current_;
+    }
+    std::cout << '\n';
+    current_ = values_.begin();*/
+    std::cout << "isBegin: " << (current_ == values_.begin() ) << '\n';
+    std::cout << this << '\n';
   }
 
-  bool can_increment() const { return current != end; }
+  friend bool operator==( const InnerIterator& lhs, const InnerIterator& rhs ) {
+    return lhs.current_ == rhs.current_;// && lhs.values == rhs.values;//lhs.begin == rhs.begin && lhs.end == rhs.end;
+  }
 
-  void increment() { current++; }
+  bool can_dereference() const { 
+    //std::cout << "Can Dereference " << typeid(SlotName).name() << ": " << ( current_ != values_.end() ) << '\n';
+    return current_ != values_.end() && std::next( current_ ) != values_.end();
+  }
 
-  void reset() { current = begin; }
+  void increment() { 
+    std::cout << this << '\n';
+    std::cout << "Incrementing " << typeid(SlotName).name() << " isBegin: " 
+      << (current_ == values_.begin() ) << ", " << **current_;
+    current_++; 
+    std::cout << " -> " << **current_ << " isEnd: " << (current_ != values_.end() ) << '\n';
+    std::cout << "values size: " << values_.size() << '\n';
+  }
+
+  void reset() { current_ = values_.begin(); }
 
   template<typename>
   struct FillSlot;
@@ -141,14 +166,13 @@ struct InnerIterator<SlotPart, ContentsView<Grid, InputTree>> {
   template<typename Name, typename Ancestor, typename Value, typename... Descendants>
   struct FillSlot<std::tuple<Name, Ancestor, Value, Descendants...>> {
     template<typename DataT>
-    void fill( DataT& data, const Grid* grid_p ) {
+    static void fill( DataT& data, const Grid* grid_p ) {
       //precist hodnotu data<Ancestor>
       auto ancestor = data.template get<Ancestor>();
       //precist grid_p<Name>( ancestor ); ta je typu Value
-      Value value = grid_p->template get<Name>( ancestor );
+      std::optional<Value> valueOpt = grid_p->template get<Name>( ancestor );
       //zapsat do data<Name>
-      //data.template set<Name>( value );
-      data.template set<Name>( "asd" );
+      data.template set<Name>( *valueOpt );
     }
   };
 
@@ -176,11 +200,8 @@ struct InnerIterator<SlotPart, ContentsView<Grid, InputTree>> {
   
   template<typename DataT>
   void fill( DataT& data ) const {
-    //undef<SlotPart> as;
-    //undef<SubTree> a;
-    //undef<DataT> asd;
     //na spravne misto v data zapsat hodnotu, na niz ukazuje current
-    data.template set<SlotName>( **current );
+    data.template set<SlotName>( **current_ );
     FillSlots<SubTree>::fill( data, grid_p );
   }
 };
@@ -193,11 +214,13 @@ struct Incrementer {
   template<typename IteratorsT>
   static void increment( IteratorsT& iterators ) {
     auto& current = std::get<Index>( iterators );
-    if ( current.can_increment() ) {
-      current.increment();
-    } else {
-      Incrementer<Iterators, Index - 1>::increment( iterators );
-      current.reset();
+    current.increment();
+
+    if ( ! current.can_dereference() ) {
+      if constexpr( Index > 0 ) {
+        current.reset();
+      }
+      Incrementer<Iterators, Index - 1>::increment( iterators ); 
     }
   }
 };
@@ -228,7 +251,8 @@ struct InnerIterators<std::tuple<Nodes...>, GridView> {
   }
 
   friend bool operator==( const InnerIterators& lhs, const InnerIterators& rhs ) {
-    return lhs.innerIterators == rhs.innerIterators || ( ! lhs.canIncrement() && ! rhs.canIncrement() );
+    return lhs.innerIterators == rhs.innerIterators || 
+      ( ! lhs.can_dereference() && ! rhs.can_dereference() );
   }
 
   template<typename DataT>
@@ -236,8 +260,8 @@ struct InnerIterators<std::tuple<Nodes...>, GridView> {
     ( std::get<InnerIterator<Nodes, GridView>>( innerIterators ).fill( data ), ... );
   }
 
-  bool canIncrement() const {
-    return ( std::get<InnerIterator<Nodes, GridView>>( innerIterators ).can_increment() || ... );
+  bool can_dereference() const {
+    return ( std::get<InnerIterator<Nodes, GridView>>( innerIterators ).can_dereference() && ... );
   }
 };
 
@@ -261,7 +285,16 @@ struct ContentsImpl<ContentsView<Grid, InputTree>> {
 
     constexpr DataT operator*() const {
       DataT result;
+      std::cout << "operator*()\n";
       innerIterators.fill( result );
+      /*std::cout << "DefaultGridId: " << result.template get<DefaultGridId>() << '\n';
+      std::cout << "Size: " << result.template get<Size>() << '\n';
+      std::cout << "Width: " << result.template get<Width>() << '\n';
+      std::cout << "Height: " << result.template get<Height>() << '\n';
+      std::cout << "CentersFieldId: " << result.template get<CentersFieldId>() << '\n';
+      std::cout << "RowId: " << result.template get<RowId>() << '\n';
+      std::cout << "ColumnId: " << result.template get<ColumnId>() << '\n';
+      std::cout << "Value: " << result.template get<Value>() << '\n';*/
       return result;
     }
 
@@ -288,9 +321,6 @@ struct Contents {
 
   template<typename InputView>
   using OutputT = typename ContentsImpl<InputView>::OutputT;
-
-  /*template<typename InputView>
-  using OutputIt = typename ContentsImpl<InputView>::OutputIt;*/
 
   template<typename InputT>//InputT je ContentsView<Grid, InputTree>, kde Grid poskytuje data
       //a InputTree obsahuje info o tom, ktere sloty me zajimaji
