@@ -89,7 +89,7 @@ class PuzzleImpl {
     }
 
     template<typename ValueName>
-    auto unique_values() const {
+    const auto& unique_values() const {
       return grid.template unique_values<ValueName>();
     }
 

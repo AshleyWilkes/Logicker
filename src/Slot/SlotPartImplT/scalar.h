@@ -102,7 +102,7 @@ class ScalarImpl {
       return values_;
     }
 
-    auto 
+    const auto&
     unique_values() const {
       for ( auto opt_val : values() ) {
         if ( opt_val.has_value() ) {

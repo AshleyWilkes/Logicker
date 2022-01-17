@@ -83,8 +83,10 @@ class PlanarSizeImpl {
       if ( !valueVector.empty() && getValue().has_value() ) { return false; }
 
       const auto& slotInput = dataInput.template getSlotInput<KeySlotPart, ValueSlotPart>().value();
-      valueVector.push_back( CountPair{ std::make_pair<Count, Count>(
-        slotInput.get( Singleton{} ).value(), slotInput.get( Singleton{} ).value() ) } );
+      Count value1 = slotInput.get( Singleton{} ).value();
+      Count value2 = slotInput.get( Singleton{} ).value();
+      valueVector.push_back( CountPair{ std::make_pair<Count, Count>( 
+            std::move( value1 ), std::move( value2 ) ) } );
       range = std::ranges::subrange{ valueVector };
       return true;
     }
