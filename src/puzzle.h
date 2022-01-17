@@ -45,13 +45,13 @@ class GridImpl : public HasSlots<Slots_> {//je to Impl, protoze Grid uz je pouzi
     //pak najde Slot, jehoz je ten SlotPart ValuePart
     //a vrati range-of-values toho Slotu
     template<typename ValueName>
-    auto unique_values() const {
+    const auto& unique_values() const {
       using Slot = typename Finder<Slots, ValueSlotPartHasName<ValueName>>::type;
       return HasSlot<Slot>::unique_values();
     }
 
     template<typename ValueName>
-    auto values() const {
+    const auto& values() const {
       using Slot = typename Finder<Slots, ValueSlotPartHasName<ValueName>>::type;
       return HasSlot<Slot>::values();
     }
@@ -72,6 +72,7 @@ class PuzzleImpl {
 
   public:
     using Slots_ = Slots;
+    using SlotsTypesTree_ = SlotsTypesTree;
 
     using GridI = GridImpl<typename SlotTree<PuzzleType>::Slots>;
 

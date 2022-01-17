@@ -8,6 +8,7 @@ template<typename, typename>
 class PlanarHeightImpl {
   private:
     std::vector<std::optional<Count>> valueVector;
+    decltype( std::ranges::subrange{ valueVector } ) range;
   public:
     template<typename Puzzle, typename DataPresenter>
     bool tryInput( const Puzzle& puzzle, const DataPresenter& ) {
@@ -15,6 +16,7 @@ class PlanarHeightImpl {
 
       auto size = puzzle.template get<Size>();
       valueVector.push_back( std::get<1>( ( *size ).getValue() ) );
+      range = std::ranges::subrange{ valueVector };
       return true;
     }
 
@@ -25,8 +27,8 @@ class PlanarHeightImpl {
 
     auto get( const Singleton& ) const { return getValue(); }
 
-    auto values() const {
-      return std::ranges::subrange{ valueVector };
+    const auto& values() const {
+      return range;
     }
 };
 
@@ -40,6 +42,7 @@ template<typename, typename>
 class PlanarWidthImpl {
   private:
     std::vector<std::optional<Count>> valueVector;
+    decltype( std::ranges::subrange{ valueVector } ) range;
   public:
     template<typename Puzzle, typename DataPresenter>
     bool tryInput( const Puzzle& puzzle, const DataPresenter& ) {
@@ -47,6 +50,7 @@ class PlanarWidthImpl {
 
       auto size = puzzle.template get<Size>();
       valueVector.push_back( std::get<0>( ( *size ).getValue() ) );
+      range = std::ranges::subrange{ valueVector };
       return true;
     }
 
@@ -57,8 +61,8 @@ class PlanarWidthImpl {
 
     auto get( const Singleton& ) const { return getValue(); }
 
-    auto values() const {
-      return std::ranges::subrange{ valueVector };
+    const auto& values() const {
+      return range;
     }
 };
 
@@ -72,6 +76,7 @@ template<typename KeySlotPart, typename ValueSlotPart>
 class PlanarSizeImpl {
   private:
     std::vector<std::optional<CountPair>> valueVector;
+    decltype( std::ranges::subrange{ valueVector } ) range;
   public:
     template<typename Puzzle, typename DataInput>
     bool tryInput( const Puzzle&, const DataInput& dataInput ) {
@@ -80,6 +85,7 @@ class PlanarSizeImpl {
       const auto& slotInput = dataInput.template getSlotInput<KeySlotPart, ValueSlotPart>().value();
       valueVector.push_back( CountPair{ std::make_pair<Count, Count>(
         slotInput.get( Singleton{} ).value(), slotInput.get( Singleton{} ).value() ) } );
+      range = std::ranges::subrange{ valueVector };
       return true;
     }
 
@@ -90,8 +96,8 @@ class PlanarSizeImpl {
 
     auto get( const Singleton& ) const { return getValue(); }
 
-    auto values() const {
-      return std::ranges::subrange{ valueVector };
+    const auto& values() const {
+      return range;
     }
 };
 

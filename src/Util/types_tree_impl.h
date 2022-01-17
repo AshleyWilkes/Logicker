@@ -79,6 +79,7 @@ namespace types_tree::__detail {
 
   template<typename... KnownImplementationNodes>
   struct types_tree_impl<std::tuple<KnownImplementationNodes...>> {
+    using tuple = std::tuple<KnownImplementationNodes...>;
     template<typename...>
     struct Add;
 

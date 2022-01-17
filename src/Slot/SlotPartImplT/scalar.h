@@ -16,6 +16,7 @@ class ScalarImpl {
     using ValueT = typename ValueSlotPart::ValueT;
     std::map<KeyT, std::optional<ValueT>> map_;
     mutable std::set<ValueT> unique_values_;
+    decltype( map_ | std::views::values ) values_ = map_ | std::views::values;
   public:
     template<typename Puzzle>
     auto getKeysRange( const Puzzle& puzzle ) {
@@ -63,6 +64,7 @@ class ScalarImpl {
         }
         ++inputIt;
       }
+      values_ = map_ | std::views::values;
       return result;
     }
 
@@ -95,9 +97,9 @@ class ScalarImpl {
       }
     }
 
-    auto
+    const auto&
     values() const {
-      return map_ | std::views::values;
+      return values_;
     }
 
     auto 

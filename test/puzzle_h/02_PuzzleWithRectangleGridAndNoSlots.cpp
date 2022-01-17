@@ -41,14 +41,14 @@ namespace {
     ASSERT_EQ( range.size(), 15 );
     int curId = 1;
     for ( Index fieldId : range ) {
-      ASSERT_EQ( fieldId, Index{ curId } );
+      EXPECT_EQ( fieldId, Index{ curId } );
       int rowId = puzzle.get<RowId>( fieldId ).value();
       int columnId = puzzle.get<ColumnId>( fieldId ).value();
-      ASSERT_GE( rowId, 1 );
-      ASSERT_LE( rowId, 5 );
-      ASSERT_GE( columnId, 1 );
-      ASSERT_LE( columnId, 3 );
-      ASSERT_EQ( (rowId - 1) * 3 + columnId, curId );
+      EXPECT_GE( rowId, 1 );
+      EXPECT_LE( rowId, 5 );
+      EXPECT_GE( columnId, 1 );
+      EXPECT_LE( columnId, 3 );
+      EXPECT_EQ( (rowId - 1) * 3 + columnId, curId );
       
       curId++;
     }

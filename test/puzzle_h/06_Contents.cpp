@@ -27,21 +27,20 @@ namespace {
     grid << testData;
 
   //- pomoci Contents vytvorit range, odpovidajici datum v gridu
-    using ContentsV = ContentsView<GridImpl<Slots_>, SlotsTypesTree>;
-    ContentsV gridView{ &grid };
-    auto contents = Contents{}( gridView );
+    auto contents = Contents<SlotsTypesTree>( std::ranges::single_view{ grid } );
     ASSERT_EQ( contents.begin() != contents.end(), true );
+    using DataSet = std::set<typename decltype( contents.begin() )::value_type>;
+    DataSet actualData;
+    std::ranges::copy( contents, std::inserter( actualData, actualData.begin() ));
 
   //- overit, ze range obsahuje ocekavana data
-    using DataT = typename Contents::DataT<ContentsV>;
-    std::set<DataT> expectedData{ 
+    DataSet expectedData{ 
       std::make_tuple<>( types_tree::__detail::root_value{}, Singleton{}, Count{ 42 } ) 
     };
-    std::set<DataT> actualData{ contents.begin(), contents.end() };
     ASSERT_EQ( actualData, expectedData );
   }
 
-  /*TEST( Contents, SimpleContents1x1 ) {
+  TEST( Contents, SimpleContents1x1 ) {
   //- vytvorit tree jako typ podle predpokladu testu
     struct TestGrid {
       using Grid_ = Grid<Rectangle<DefaultGridId, Centers>>;
@@ -51,7 +50,8 @@ namespace {
       using Constraints_ = Constraints<>;
     };
   //- vytvorit grid, ktery umi obsahovat tree data 
-    Puzzle<TestGrid> puzzle;
+    using Puzzle_ = Puzzle<TestGrid>;
+    Puzzle_ puzzle;
     using SizeInputData = SlotInputData<Size, Singleton, Count>;
     using ValueInputData = SlotInputData<Value, Count>;
     using TestDataInputT = TestDataInput<SizeInputData, ValueInputData>;
@@ -64,21 +64,22 @@ namespace {
     TestDataInputT testInput{ sizeInputData, valueInputData };
     puzzle << testInput;
   //- pomoci Contents vytvorit range, odpovidajici datum v gridu
-    auto contents = Contents{}( puzzle.getContentsView() );
+    auto contents = Contents<typename Puzzle_::SlotsTypesTree_>( 
+        std::ranges::single_view{ puzzle.getGrid() } );
     
   //- overit, ze range obsahuje ocekavana data
-    using DataT = typename Contents::DataT<decltype( puzzle.getContentsView() )>;
-    std::set<DataT> expectedData {
+    using DataSet = std::set<typename decltype( contents.begin() )::value_type>;
+    DataSet actualData;
+    std::ranges::copy( contents, std::inserter( actualData, actualData.begin() ));
+    DataSet expectedData {
       std::make_tuple<>( types_tree::__detail::root_value{}, Singleton{}, 
-          CountPair( std::make_pair<Count, Count>( Count{ 2 }, Count { 2 } ) ), Count{ 2 }, 
-          Count{ 2 }, Index{ 1 }, Index{ 1 }, Index{ 1 }, Count{ 23 } )
+          CountPair( std::make_pair<Count, Count>( Count{ 1 }, Count { 1 } ) ), Count{ 1 }, 
+          Count{ 1 }, Index{ 1 }, Index{ 1 }, Index{ 1 }, Count{ 42 } )
     };
-    std::set<DataT> actualData{ contents.begin(), contents.end() };
-    std::cout << "Size: " << actualData.size() << "\n";
     ASSERT_EQ( actualData, expectedData );
-  }*/
+  }
 
-  /*TEST( Contents, SimpleContents2x2 ) {
+  TEST( Contents, SimpleContents2x2 ) {
   //- vytvorit tree jako typ podle predpokladu testu
     struct TestGrid {
       using Grid_ = Grid<Rectangle<DefaultGridId, Centers>>;
@@ -88,7 +89,8 @@ namespace {
       using Constraints_ = Constraints<>;
     };
   //- vytvorit grid, ktery umi obsahovat tree data 
-    Puzzle<TestGrid> puzzle;
+    using Puzzle_ = Puzzle<TestGrid>;
+    Puzzle_ puzzle;
     using SizeInputData = SlotInputData<Size, Singleton, Count>;
     using ValueInputData = SlotInputData<Value, Count>;
     using TestDataInputT = TestDataInput<SizeInputData, ValueInputData>;
@@ -104,22 +106,27 @@ namespace {
     TestDataInputT testInput{ sizeInputData, valueInputData };
     puzzle << testInput;
   //- pomoci Contents vytvorit range, odpovidajici datum v gridu
-    auto contents = Contents{}( puzzle.getContentsView() );
+    auto contents = Contents<typename Puzzle_::SlotsTypesTree_>( 
+        std::ranges::single_view{ puzzle.getGrid() } );
     
   //- overit, ze range obsahuje ocekavana data
-    using DataT = typename Contents::DataT<decltype( puzzle.getContentsView() )>;
-    std::set<DataT> expectedData {
+    using DataSet = std::set<typename decltype( contents.begin() )::value_type>;
+    DataSet actualData;
+    std::ranges::copy( contents, std::inserter( actualData, actualData.begin() ));
+    DataSet expectedData {
       std::make_tuple<>( types_tree::__detail::root_value{}, Singleton{}, 
           CountPair( std::make_pair<Count, Count>( Count{ 2 }, Count { 2 } ) ), Count{ 2 }, 
-          Count{ 2 }, Index{ 1 }, Index{ 1 }, Index{ 1 }, Count{ 23 } )
+          Count{ 2 }, Index{ 1 }, Index{ 1 }, Index{ 1 }, Count{ 23 } ),
+      std::make_tuple<>( types_tree::__detail::root_value{}, Singleton{}, 
+          CountPair( std::make_pair<Count, Count>( Count{ 2 }, Count { 2 } ) ), Count{ 2 }, 
+          Count{ 2 }, Index{ 2 }, Index{ 1 }, Index{ 2 }, Count{ 42 } ),
+      std::make_tuple<>( types_tree::__detail::root_value{}, Singleton{}, 
+          CountPair( std::make_pair<Count, Count>( Count{ 2 }, Count { 2 } ) ), Count{ 2 }, 
+          Count{ 2 }, Index{ 3 }, Index{ 2 }, Index{ 1 }, Count{ 1 } ),
+      std::make_tuple<>( types_tree::__detail::root_value{}, Singleton{}, 
+          CountPair( std::make_pair<Count, Count>( Count{ 2 }, Count { 2 } ) ), Count{ 2 }, 
+          Count{ 2 }, Index{ 4 }, Index{ 2 }, Index{ 2 }, Count{ 988 } )
     };
-    //auto it = contents.begin();
-    //while ( it != contents.end() ) {
-      //DataT b = *it;
-      //++it;
-    //}
-    std::set<DataT> actualData{ contents.begin(), contents.end() };
-    std::cout << "Size: " << actualData.size() << "\n";
     ASSERT_EQ( actualData, expectedData );
-  }*/
+  }
 }//namespace
