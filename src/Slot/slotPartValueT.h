@@ -28,27 +28,33 @@ class Count : public SlotPartValueT { //non-negative integer including 0; [ 0 ..
     operator int() const { return value_; }
 };
 
-class CountPair : public SlotPartValueT {
+template<typename T>
+class Pair : public SlotPartValueT {
   private:
-    std::pair<Count, Count> value_;
+    std::pair<T, T> value_;
   public:
-    CountPair() = default;
-    CountPair( const std::pair<Count, Count>& value ) : value_{ value } {}
+    using ElementT = T;
 
-    std::pair<Count, Count> getValue() { return value_; }
+    Pair() = default;
+    Pair( const std::pair<T, T>& value ) : value_{ value } {}
+    Pair( T v1, T v2 ) : value_{ v1, v2 } {}
 
-    friend bool operator<( const CountPair& lhs, const CountPair& rhs ) {
+    std::pair<T, T> getValue() const { return value_; }
+
+    friend bool operator<( const Pair& lhs, const Pair& rhs ) {
       return lhs.value_ < rhs.value_;
     }
 
-    friend bool operator==( const CountPair& lhs, const CountPair& rhs ) {
+    friend bool operator==( const Pair& lhs, const Pair& rhs ) {
       return lhs.value_ == rhs.value_;
     }
 
-    friend std::ostream& operator<<( std::ostream& os, const CountPair& pair ) {
+    friend std::ostream& operator<<( std::ostream& os, const Pair& pair ) {
       return os << "[" << std::get<0>( pair.value_ ) << ", " << std::get<1>( pair.value_ ) << "]";
     }
 };
+
+using CountPair = Pair<Count>;
 
 class Black;
 class White;
@@ -56,6 +62,7 @@ class BlackOrWhite : public SlotPartValueT { //boolean value: false - white, tru
   private:
     bool value_;
   public:
+    BlackOrWhite() = default;
     BlackOrWhite( bool value ) : value_{ value } {}
     operator bool() const { return value_; }
 };
@@ -67,9 +74,4 @@ struct Set {
   public:
     using ElementT = T;
     std::set<T> toSet() { return set_; }
-};
-
-template<typename T>
-struct Pair{
-  using ElementT = T;
 };

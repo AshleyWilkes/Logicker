@@ -2,6 +2,8 @@
 
 #include "exists.h"
 
+#define DEBUG_Puzzle_h
+
 namespace __processed {
   template<typename Input, typename Transform, typename Output>
   class Transformation {

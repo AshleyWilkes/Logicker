@@ -41,16 +41,32 @@ class Narrow {
 template<typename...>
 class Transform;
 
+//tady to zacina bejt husty, cili: CountOf<Name, Value> je pocet polozek v inputu,
+//jejichz Slot Name obsahuje hodnotu Value
+//pokud dany Slot obsahuje literal hodnoty, pak Value je Constant prislusneho typu
 template<typename SlotName, typename ValueToCount>
 struct CountOf {
-  template<typename>
-  using OutputT = int;
+  template<typename InputT>
+  auto operator()( const InputT& input ) {
+    Count value = input.template get<SlotName>();
+    return ( value == ValueToCount::value ? 1 : 0 );
+  }
+
+  template<typename InputT>
+  using OutputT = decltype( std::declval<CountOf>()( std::declval<InputT>() ) );
 };
 
-template<int>
+template<int Value>
 struct Constant{
   template<typename>
   using OutputT = int;
+
+  static constexpr int value = Value;
+
+  template<typename InputT>
+  constexpr int operator()( const InputT& ) {
+    return Value;
+  }
 };
 
 struct LessOrEqual{
@@ -61,6 +77,15 @@ struct LessOrEqual{
 struct Equal{
   template<typename, typename>
   using OutputT = bool;
+
+  template<typename Lhs, typename Rhs>
+  OutputT<Lhs, Rhs> operator()( const Lhs& lhs, const Rhs& rhs ) {
+    if ( lhs == rhs ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 };
 
 template<typename...>

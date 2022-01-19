@@ -94,7 +94,7 @@ namespace Checker {
   struct ConstraintValidityChecker {
     template<typename Puzzle>
     static bool check( const Puzzle& solution ) {
-      return TransformationsPerformer<Constraint>::transform( solution.getContents() );
+      return TransformationsPerformer<Constraint>::transform( solution.getContentsView() );
     }
   };
 

@@ -8,6 +8,7 @@
 #include "Topology/Rectangle/rectangle.h"
 #include "Transformation/Assert.h"
 #include "Transformation/Contents.h"
+#include "Transformation/FilterIn.h"
 #include "Transformation/NarrowBottom.h"
 #include "Transformation/NarrowTop.h"
 #include "Transformation/Pairs.h"
@@ -31,8 +32,9 @@ namespace {
         Transform<
           NarrowTop<CentersFieldId>,
           NarrowBottom<RowId, ColumnId, Value>,
-          Contents,
-          Pairs<>//Neighbors<Rectangle::E, Rectangle::S>>
+          ContentsA,
+          Pairs,
+          FilterIn<Neighbors<E, S>>
         >, Assert<
           CountOf<Value, Black>,
           LessOrEqual,

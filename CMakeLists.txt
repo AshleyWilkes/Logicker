@@ -26,7 +26,9 @@ target_link_libraries(test PRIVATE pthread)
 #target_link_libraries(test PRIVATE gecodeminimodel)
 #target_link_libraries(test PRIVATE gecodegist)
 
-#target_sources(test PRIVATE test/puzzle_h/07_Heyawake_BlacksNoTouchConstraint.cpp)
+target_sources(test PRIVATE test/puzzle_h/09_SimplePuzzleWithAConstraint.cpp)
+#[[
+target_sources(test PRIVATE test/puzzle_h/19_Heyawake_BlacksNoTouchConstraint.cpp)
 target_sources(test PRIVATE test/Transformation/Narrow.cpp)
 target_sources(test PRIVATE test/Transformation/NarrowBottom.cpp)
 target_sources(test PRIVATE test/Transformation/NarrowTop.cpp)
@@ -40,6 +42,9 @@ target_sources(test PRIVATE test/puzzle_h/03_HeyawakeGrid.cpp)
 target_sources(test PRIVATE test/puzzle_h/04_HeyawakeGridWithTestDataInput.cpp)
 target_sources(test PRIVATE test/puzzle_h/05_SimpleTransformation.cpp)
 target_sources(test PRIVATE test/puzzle_h/06_Contents.cpp)
+target_sources(test PRIVATE test/puzzle_h/07_Pairs.cpp)
+target_sources(test PRIVATE test/puzzle_h/08_Filter.cpp)
+]]#
 
 #target_sources(test PRIVATE src/heyawake.cpp)
 

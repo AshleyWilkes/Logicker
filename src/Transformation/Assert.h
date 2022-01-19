@@ -14,4 +14,15 @@ struct Assert {
 
   template<typename Input>
   using OutputT = typename AssertImpl<Input>::OutputT;
+
+  template<typename InputT>
+  OutputT<InputT> operator()( const InputT& input ) {
+    //InputT je ContentsValue, jehoz se lze vyptat na co je treba
+    //takze potrebuju vyzjistit levy operand
+    typename AssertImpl<InputT>::LhsOutputT lhs = LhsOperand{}( input );
+    //vyzjistit pravy operand
+    typename AssertImpl<InputT>::RhsOutputT rhs = RhsOperand{}( input );
+    //hodnoty poslat operatoru a jeho vysledek vratit
+    return Operator{}( lhs, rhs );
+  }
 };

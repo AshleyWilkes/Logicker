@@ -5,6 +5,9 @@ class ContentsView {
   private:
     const Grid *grid;
   public:
+    using Grid_ = Grid;
+    using Slots_ = SlotsTree;
+
     ContentsView( const Grid* grid_ ) : grid{ grid_ } {}
 
     template<typename SlotsTree2>

@@ -68,10 +68,10 @@ class RectangleRowIdImpl {
     std::optional<Index> 
     get( const Index& key ) const { 
       if ( map_.contains( key ) ) {
-        //std::cout << "YES key " << key << " in RectangleRowIdImpl.map_\n";
+        std::cout << "YES key " << key << " in RectangleRowIdImpl.map_\n";
         return map_.at(key); 
       } else {
-        //std::cout << "No key " << key << " in RectangleRowIdImpl.map_\n";
+        std::cout << "No key " << key << " in RectangleRowIdImpl.map_\n";
         return std::optional<Index>{};
       }
     }
@@ -106,10 +106,10 @@ class RectangleColumnIdImpl {
     std::optional<Index>
     get( const Index& key ) const {  
       if ( map_.contains( key ) ) {
-        //std::cout << "YES key " << key << " in RectangleColumnIdImpl.map_\n";
+        std::cout << "YES key " << key << " in RectangleColumnIdImpl.map_\n";
         return map_.at(key); 
       } else {
-        //std::cout << "No key " << key << " in RectangleColumnIdImpl.map_\n";
+        std::cout << "No key " << key << " in RectangleColumnIdImpl.map_\n";
         return std::optional<Index>{};
       }
     }
