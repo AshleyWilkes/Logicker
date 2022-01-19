@@ -109,6 +109,10 @@ class CheckerTestPuzzleImpl {
       return values<Name>();
     }
 
+    //tato metoda je Singleton -> bool, protoze je specializovana na jediny use case, ktery byl 
+    //  predpokladan
+    //nicmene cely test potrebuje aktualizaci, protoze vznikl v dobe, kdy se nevedelo,
+    //  ze retez transformaci musi zacit with ContentsView
     bool getContents() const {
       return values_.at( Singleton{} );
     }

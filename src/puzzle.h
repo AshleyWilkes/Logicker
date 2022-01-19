@@ -7,7 +7,7 @@
 #include "Puzzle/constraintsSet.h"
 #include "Puzzle/slotTree.h"
 
-#define DEBUG_Puzzle_h
+//#define DEBUG_Puzzle_h
 
 template<typename Slot>
 class HasSlot;
