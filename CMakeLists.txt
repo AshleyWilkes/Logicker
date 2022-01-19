@@ -26,8 +26,8 @@ target_link_libraries(test PRIVATE pthread)
 #target_link_libraries(test PRIVATE gecodeminimodel)
 #target_link_libraries(test PRIVATE gecodegist)
 
+#target_sources(test PRIVATE test/puzzle_h/09_SimplePuzzleWithAConstraint.cpp)
 #[[
-target_sources(test PRIVATE test/puzzle_h/09_SimplePuzzleWithAConstraint.cpp)
 target_sources(test PRIVATE test/checker.cpp)
 target_sources(test PRIVATE test/puzzle_h/19_Heyawake_BlacksNoTouchConstraint.cpp)
 ]]#

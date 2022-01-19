@@ -72,6 +72,6 @@ struct Set {
   private:
     std::set<T> set_;
   public:
-    using ElementT = T;
+    using value_type = T;
     std::set<T> toSet() { return set_; }
 };
