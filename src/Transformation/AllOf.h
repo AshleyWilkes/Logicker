@@ -15,6 +15,12 @@ namespace Logicker::Transformation {
     using OutputT = bool;
   };
 
+  template<typename Trans, typename Arg>
+    requires( std::is_same_v< typename Trans::template OutputT< std::ranges::range_value_t< Arg > >, bool > )
+  struct AllOfImpl< Trans, Arg > {
+    using OutputT = bool;
+  };
+
   template<typename Trans>
   struct AllOf {
     template<typename... Args>
