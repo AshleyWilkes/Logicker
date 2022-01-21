@@ -25,7 +25,7 @@ namespace {
     ASSERT_EQ( actualData, expectedData );
   }
 
-  TEST( Pairs, SimplePairs2x2 ) {
+  TEST( Filter, SimpleFilter2x2 ) {
   //- vytvorit tree jako typ podle predpokladu testu
     struct TestGrid {
       using Grid_ = Grid<Rectangle<DefaultGridId, Centers>>;

@@ -93,6 +93,8 @@ class ContentsImpl : public std::ranges::view_interface<ContentsImpl<Grid, Slots
     //predpokladam, ze grid je single_view a m_grid je jeho obsah
     ContentsImpl( Grid&& grid ) : m_grid{ grid } {}
 
+    class OuterIter;
+
     //no hele implementace InnerIter a InnerIters je sice humus, ale nechci tady stravit mladi,
     //  upravim ji nekdy jindy
     template<typename SlotPart>
@@ -105,17 +107,19 @@ class ContentsImpl : public std::ranges::view_interface<ContentsImpl<Grid, Slots
       using SentinelT = decltype( std::declval<Grid>().template values<SlotName>().end() );
 
       public:
-        const ContentsImpl* m_parent;
+        const OuterIter* m_parent;
         //ValuesT m_range;
         IteratorT m_begin, m_current;
         SentinelT m_end;
+        Grid m_grid;
 
         InnerIter() = default;
         //InnerIter( ContentsImpl* parent ) : m_range{ parent->m_grid.template values<SlotName>() },
           //m_begin{ m_range.begin() }, m_current{ m_begin }, m_end{ m_range.end() } {}
-        InnerIter( const ContentsImpl* parent ) : m_parent{ parent },
+        InnerIter( const OuterIter* parent ) : m_parent{ parent },
           m_begin{ parent->m_grid.template values<SlotName>().begin() },
-          m_current{ m_begin }, m_end{ parent->m_grid.template values<SlotName>().end() } {}
+          m_current{ m_begin }, m_end{ parent->m_grid.template values<SlotName>().end() },
+          m_grid{ m_parent->m_grid } {}
 
         InnerIter& operator++() { m_current++; return *this; }
         InnerIter& operator++( int ) { return ++*this; }
@@ -127,7 +131,7 @@ class ContentsImpl : public std::ranges::view_interface<ContentsImpl<Grid, Slots
           using Ancestor = std::tuple_element_t<1, Slot>;
           auto ancestor = output.template get<Ancestor>();
           using Value = std::tuple_element_t<2, Slot>;
-          std::optional<Value> valueOpt = m_parent->m_grid.template get<Name>( ancestor );
+          std::optional<Value> valueOpt = m_grid.template get<Name>( ancestor );
           output.template set<Name>( *valueOpt );
           if constexpr ( Index < std::tuple_size_v<SubTreeTuple> - 1 ) {
             fillSlot<Index + 1>( output );
@@ -150,12 +154,12 @@ class ContentsImpl : public std::ranges::view_interface<ContentsImpl<Grid, Slots
 
     template<typename... Nodes>
     class InnerIters<std::tuple<Nodes...>> {
-      const ContentsImpl* m_parent;
+      const OuterIter* m_parent;
       std::tuple<InnerIter<Nodes>...> m_iters;
 
       public:
         InnerIters() = default;
-        InnerIters( const ContentsImpl* parent ) : m_parent{ parent }, 
+        InnerIters( const OuterIter* parent ) : m_parent{ parent }, 
           m_iters{ InnerIter<Nodes>{ m_parent }... } {}
 
         template<size_t Index>
@@ -194,14 +198,14 @@ class ContentsImpl : public std::ranges::view_interface<ContentsImpl<Grid, Slots
         using rootsName = typename std::tuple_element<0, rootsNode>::type;
         using roots = typename SlotsTypesTree::template get_descendants<rootsName>;
 
-        const ContentsImpl* m_parent;
-        InnerIters<roots> m_current;
       public:
+        Grid m_grid;
+        InnerIters<roots> m_current;
         using difference_type = std::ptrdiff_t;
         using value_type = ContentsValue<Grid, SlotsTypesTree>;
 
         OuterIter() = default;
-        OuterIter( const ContentsImpl& parent ) : m_parent{ &parent }, m_current{ m_parent }{}
+        OuterIter( const ContentsImpl& parent ) :  m_grid{ parent.m_grid }, m_current{ this }{}
 
         value_type operator*() const { value_type result; return result << m_current; }
         OuterIter& operator++() { m_current++; return *this; }
@@ -226,6 +230,9 @@ template<typename SlotsTypesTree>
 inline constexpr std::views::__adaptor::_RangeAdaptorClosure Contents
   = [] <typename GridSingleView> ( GridSingleView&& gridSingleView ) {
     auto grid = *( gridSingleView.begin() );
+    /*auto beg = grid.template values<CentersFieldId>().begin();
+    auto d = *beg;
+    std::cout << "ContentsImpl: " << *d << '\n';*/
     return ContentsImpl<std::ranges::range_value_t<GridSingleView>, SlotsTypesTree>{ std::move( grid ) };
   };
 
@@ -240,8 +247,7 @@ struct ContentsA {
 
   template<typename InputT>
   OutputT<InputT> operator()( const InputT& inputContentsView ) {
-    auto grid_p = inputContentsView.get_grid_p();
-    auto inputRange = std::ranges::single_view{ *grid_p };
+    auto inputRange = std::ranges::single_view{ inputContentsView.get_grid() };
     return inputRange | Contents<typename InputT::Slots_>;
   }
 };

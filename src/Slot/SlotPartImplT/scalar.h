@@ -89,10 +89,10 @@ class ScalarImpl {
     std::optional<typename ValueSlotPart::ValueT>
     get( const KeyT& key ) const {
       if ( map_.contains( key ) ) {
-        std::cout << "YES key " << key << " in ScalarImpl.map_\n";
+        //std::cout << "YES key " << key << " in ScalarImpl.map_\n";
         return map_.at(key); 
       } else {
-        std::cout << "No key " << key << " in ScalarImpl.map_\n";
+        //std::cout << "No key " << key << " in ScalarImpl.map_\n";
         return std::optional<typename ValueSlotPart::ValueT>{};
       }
     }

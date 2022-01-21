@@ -4,6 +4,8 @@
 
 #include "undef.h"
 
+class CentersFieldId;
+
 namespace Checker {
   template<typename Slot>
   class SlotSanityChecker {
@@ -94,6 +96,12 @@ namespace Checker {
   struct ConstraintValidityChecker {
     template<typename Puzzle>
     static bool check( const Puzzle& solution ) {
+      /*auto cont = solution.getContentsView();
+      auto grid = cont.get_grid();
+      auto beg = grid.template values<CentersFieldId>().begin();
+      auto d = *beg;
+      std::cout << *d << '\n';
+      return false;*/
       return TransformationsPerformer<Constraint>::transform( solution.getContentsView() );
     }
   };

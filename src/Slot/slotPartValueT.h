@@ -29,6 +29,23 @@ class Count : public SlotPartValueT { //non-negative integer including 0; [ 0 ..
 };
 
 template<typename T>
+class Pair;
+
+template<typename T>
+struct Set {
+  private:
+    std::set<T> set_;
+  public:
+    using value_type = T;
+    std::set<T> toSet() { return set_; }
+
+    Set( T elem ) : set_{ elem } {}
+    Set( Pair<T> pair ) : Set{ pair.getValue() } {}
+    Set( std::pair<T, T> pair ) : set_{ std::get<0>( pair ), std::get<1>( pair ) } {}
+    Set( std::set<T> set ) : set_{ set } {}
+};
+
+template<typename T>
 class Pair : public SlotPartValueT {
   private:
     std::pair<T, T> value_;
@@ -40,6 +57,7 @@ class Pair : public SlotPartValueT {
     Pair( T v1, T v2 ) : value_{ v1, v2 } {}
 
     std::pair<T, T> getValue() const { return value_; }
+    operator Set<T>() const { return { std::get<0>( value_ ), std::get<1>( value_ ) }; }
 
     friend bool operator<( const Pair& lhs, const Pair& rhs ) {
       return lhs.value_ < rhs.value_;
@@ -56,8 +74,11 @@ class Pair : public SlotPartValueT {
 
 using CountPair = Pair<Count>;
 
-class Black;
-class White;
+template<int i>
+class Constant;
+
+using Black = Constant<1>;
+using White = Constant<0>;
 class BlackOrWhite : public SlotPartValueT { //boolean value: false - white, true - Black
   private:
     bool value_;
@@ -65,13 +86,4 @@ class BlackOrWhite : public SlotPartValueT { //boolean value: false - white, tru
     BlackOrWhite() = default;
     BlackOrWhite( bool value ) : value_{ value } {}
     operator bool() const { return value_; }
-};
-
-template<typename T>
-struct Set {
-  private:
-    std::set<T> set_;
-  public:
-    using value_type = T;
-    std::set<T> toSet() { return set_; }
 };

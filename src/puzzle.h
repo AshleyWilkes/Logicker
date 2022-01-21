@@ -104,7 +104,7 @@ class PuzzleImpl {
           ContentsView<GridI, SlotsTypesTree>>::Constraints;
 
     ContentsView<GridI, SlotsTypesTree> getContentsView() const {
-      return { &grid };
+      return { grid };
     }
 };
 

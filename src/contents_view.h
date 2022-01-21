@@ -3,15 +3,15 @@
 template<typename Grid, typename SlotsTree>
 class ContentsView {
   private:
-    const Grid *grid;
+    const Grid grid;
   public:
     using Grid_ = Grid;
     using Slots_ = SlotsTree;
 
-    ContentsView( const Grid* grid_ ) : grid{ grid_ } {}
+    ContentsView( const Grid& grid_ ) : grid{ grid_ } {}
 
     template<typename SlotsTree2>
-    ContentsView( const ContentsView<Grid, SlotsTree2>& orig ) : grid{ orig.get_grid_p() } {}
+    ContentsView( const ContentsView<Grid, SlotsTree2>& orig ) : grid{ orig.get_grid() } {}
 
-    const Grid *get_grid_p() const { return grid; }
+    Grid get_grid() const { return grid; }
 };

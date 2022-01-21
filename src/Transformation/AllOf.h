@@ -31,6 +31,7 @@ namespace Logicker::Transformation {
       //InputT je range, vsechny jeho prvky chci po jednom prohnat Transem a vratit AND vsech vysledku
       //undef<decltype( *( input.begin() ) )> b;
       //auto c = *( input.begin() );
+      //return false;
       //return Trans{}( 1 );
       //return Trans{}( *(input.begin() ) );
       return std::ranges::all_of( input.begin(), input.end(), Trans{} );

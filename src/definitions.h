@@ -46,10 +46,22 @@ class Transform;
 //pokud dany Slot obsahuje literal hodnoty, pak Value je Constant prislusneho typu
 template<typename SlotName, typename ValueToCount>
 struct CountOf {
+  template<typename T>
+  struct InputSet {
+    using type = Set<T>;
+  };
+
+  template<typename T>
+  struct InputSet<Pair<T>> {
+    using type = Set<T>;
+  };
+
   template<typename InputT>
   auto operator()( const InputT& input ) {
-    Count value = input.template get<SlotName>();
-    return ( value == ValueToCount::value ? 1 : 0 );
+    typename InputSet<InputT>::type inputSet{ input };
+    using T = typename decltype( inputSet )::value_type;
+    return std::ranges::count_if( inputSet.toSet(), []( const T& inputValue ) { 
+        return inputValue.template get<SlotName>() == ValueToCount::value; } );
   }
 
   template<typename InputT>
@@ -72,6 +84,9 @@ struct Constant{
 struct LessOrEqual{
   template<typename, typename>
   using OutputT = bool;
+
+  template<typename Lhs, typename Rhs>
+  constexpr bool operator()( const Lhs& lhs, const Rhs& rhs ) { return lhs <= rhs; }
 };
 
 struct Equal{
