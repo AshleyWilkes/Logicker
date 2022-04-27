@@ -57,7 +57,6 @@ class GridImpl : public HasSlots<Slots_> {//je to Impl, protoze Grid uz je pouzi
       using Slot = typename Finder<Slots, ValueSlotPartHasName<ValueName>>::type;
       return HasSlot<Slot>::values();
     }
-
 };
 
 template<typename PuzzleType, typename Slots, typename SlotsTypesTree>

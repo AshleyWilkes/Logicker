@@ -6,39 +6,6 @@
 #include "Util/finder.h"
 
 template<typename...>
-class NarrowImpl;
-
-//zde je tedy treba udelat tu skutecnou praci, v tomto pripade tj.
-//overit, ze WantedSlots je podmnozina InputSlots
-//vratit WantedSlots
-template<typename... AlreadyFoundSlots, typename... InputSlots, 
-  typename CurrentWantedSlotName, typename... FurtherWantedSlotNames>
-class NarrowImpl<std::tuple<AlreadyFoundSlots...>, std::tuple<InputSlots...>, 
-      std::tuple<CurrentWantedSlotName, FurtherWantedSlotNames...>> {
-  public:
-    using CurrentFoundSlot = 
-      typename Finder<std::tuple<InputSlots...>, ValueSlotPartHasName<CurrentWantedSlotName>>::type;
-    using OutputT = typename NarrowImpl<std::tuple<AlreadyFoundSlots..., CurrentFoundSlot>,
-          std::tuple<InputSlots...>, std::tuple<FurtherWantedSlotNames...>>::OutputT;
-};
-
-template<typename... AlreadyFoundSlots, typename... InputSlots>
-class NarrowImpl<std::tuple<AlreadyFoundSlots...>, std::tuple<InputSlots...>, std::tuple<>> {
-  public:
-    using OutputT = std::tuple<AlreadyFoundSlots...>;
-};
-
-template<typename... WantedSlotNames>
-class Narrow {
-  public:
-    template<typename InputSlots>
-    using Impl = NarrowImpl<std::tuple<>, InputSlots, std::tuple<WantedSlotNames...>>;
-
-    template<typename InputSlots>
-    using OutputT = typename Impl<InputSlots>::OutputT;
-};
-
-template<typename...>
 class Transform;
 
 //tady to zacina bejt husty, cili: CountOf<Name, Value> je pocet polozek v inputu,

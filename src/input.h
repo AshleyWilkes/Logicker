@@ -26,7 +26,7 @@ namespace Logicker::core {
       virtual std::optional<V> get( const K& ) const = 0;
       virtual ~SlotInput() = default;
   };
-
+/*
   template<typename InputKeyT = std::string>
   class DataInput {
     public:
@@ -36,4 +36,5 @@ namespace Logicker::core {
       template<typename K, typename V>
       std::optional<SlotInput<K, V>> getSlotInput( const InputKeyT& = {} );
   };
+  */
 };

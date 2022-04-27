@@ -18,6 +18,30 @@ class E{
       return row1 == row2 && col1 + 1 == col2;
     }
 }; 
+class W{
+  public:
+    template<typename Pair>
+    static bool apply( const Pair& pair ) {
+      auto values = pair.getValue();
+      auto val1 = std::get<0>( values ), val2 = std::get<1>( values );
+
+      Index row1 = val1.template get<RowId>(), col1 = val1.template get<ColumnId>(),
+            row2 = val2.template get<RowId>(), col2 = val2.template get<ColumnId>();
+      return row1 == row2 && col1 == col2 + 1;
+    }
+}; 
+class N{
+  public:
+    template<typename Pair>
+    static bool apply( const Pair& pair ) {
+      auto values = pair.getValue();
+      auto val1 = std::get<0>( values ), val2 = std::get<1>( values );
+
+      Index row1 = val1.template get<RowId>(), col1 = val1.template get<ColumnId>(),
+            row2 = val2.template get<RowId>(), col2 = val2.template get<ColumnId>();
+      return row1 == row2 + 1 && col1 == col2;
+    }
+};
 class S{
   public:
     template<typename Pair>

@@ -1,10 +1,5 @@
 #pragma once
 
-//jako stupidni prvni implementaci lze vzit v uvahu dvoufazovy postup:
-//- mit tupy generator, ktery doopravdy prochazi dvojici iteratoru do vstupniho setu,
-//  cimz generuje uplne vsechny dvojice prvku ze vstupu
-//- nad generatorem mit filtr, ktery nektere dvojice pusti dal a nektere ne
-
 template<typename InputRange>
 struct PairsI : public std::ranges::view_interface<PairsI<InputRange>> {
   private:

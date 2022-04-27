@@ -26,15 +26,17 @@ target_link_libraries(test PRIVATE pthread)
 #target_link_libraries(test PRIVATE gecodeminimodel)
 #target_link_libraries(test PRIVATE gecodegist)
 
+target_sources(test PRIVATE test/puzzle_ms2018/1.01_Shakashaka.cpp)
 #[[
-target_sources(test PRIVATE test/checker.cpp)
-]]#
+target_sources(test PRIVATE test/puzzle_h/10_Heyawake_Checker_CheckSanity.cpp)
+target_sources(test PRIVATE test/puzzle_h/11_Heyawake_BlacksNoTouchConstraint.cpp)
+#target_sources(test PRIVATE test/puzzle_h/12_Heyawake_WhitesInterconnected.cpp)
+#target_sources(test PRIVATE test/checker.cpp)
 target_sources(test PRIVATE test/Transformation/AllOf.cpp)
 target_sources(test PRIVATE test/Transformation/NarrowBottom.cpp)
 target_sources(test PRIVATE test/Transformation/NarrowTop.cpp)
 target_sources(test PRIVATE test/Transformation/Narrow.cpp)
 target_sources(test PRIVATE test/Util/types_tree_impl.cpp)
-target_sources(test PRIVATE test/heyawake_checker.cpp)
 target_sources(test PRIVATE test/puzzle_h/01_TheSimplestOfAllPuzzles.cpp)
 target_sources(test PRIVATE test/puzzle_h/02_PuzzleWithRectangleGridAndNoSlots.cpp)
 target_sources(test PRIVATE test/puzzle_h/03_HeyawakeGrid.cpp)
@@ -44,7 +46,7 @@ target_sources(test PRIVATE test/puzzle_h/06_Contents.cpp)
 target_sources(test PRIVATE test/puzzle_h/07_Pairs.cpp)
 target_sources(test PRIVATE test/puzzle_h/08_Filter.cpp)
 target_sources(test PRIVATE test/puzzle_h/09_SimplePuzzleWithAConstraint.cpp)
-target_sources(test PRIVATE test/puzzle_h/10_Heyawake_BlacksNoTouchConstraint.cpp)
+#]]#
 
 #target_sources(test PRIVATE src/heyawake.cpp)
 
