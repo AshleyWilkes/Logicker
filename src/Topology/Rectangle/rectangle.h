@@ -51,7 +51,7 @@ class S{
 
       Index row1 = val1.template get<RowId>(), col1 = val1.template get<ColumnId>(),
             row2 = val2.template get<RowId>(), col2 = val2.template get<ColumnId>();
-      return row1 + 1== row2 && col1 == col2;
+      return row1 + 1 == row2 && col1 == col2;
     }
 };
 

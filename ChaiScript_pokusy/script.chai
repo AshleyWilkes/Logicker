@@ -1,0 +1,70 @@
+def assert_equal(x, y)
+{
+  if (x == y)
+  {
+    // Passes
+  } else {
+    // Fails
+    print("assert_equal failure: got '" + to_string(y) + "' expected '" + to_string(x) + "'");
+    exit(-1);
+  }
+}
+
+class SudokuType {
+  var data
+
+  def SudokuType() {
+    this.data = 0
+  }
+
+  def SudokuType(string x) {
+    if ("classic" == x) {
+      this.data = 1
+    } else if ("geometric" == x) {
+      this.data = 2
+    } else if ("irregular" == x) {
+      this.data = 3
+    } else {
+      throw("bad SudokuType string")
+    }
+  }
+
+  def default(SudokuType x) {
+    if (this.data == 0) {
+      this.data = x.data
+    }
+    return this
+  }
+}
+
+assert_equal(true, true);
+global classic = SudokuType("classic")
+global geometric = SudokuType("geometric")
+global irregular = SudokuType("irregular")
+
+def readSudokuType(inputName) {
+  if (false) {
+    return irregular;
+  } else {
+    return SudokuType()
+  }
+}
+
+class Topology {
+  def Topology(){}
+
+  def default(Topology t){
+    return t
+  }
+}
+
+global NoTopology = Topology()
+global Rectangle = Topology()
+
+def readTopology(inputName) {
+  return Rectangle
+}
+
+var type = readSudokuType("type").default(classic);
+puts(type.data);puts('\n');
+var topology = readTopology("topology").default(type == irregular ? NoTopology : Rectangle)
