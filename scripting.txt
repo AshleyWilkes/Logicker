@@ -1,0 +1,66 @@
+Byly identifikovány 3 typy scriptů, které chci používat:
+1) grid -- jak vytvořit interní reprezentaci obrazce úlohy
+2) constraints -- jak posuzovat správnost vyplnění obrazce
+3) data -- vstupy specifické pro konkrétní zadání
+
+Každý script, pravděpodobně ve spolupráci s nějakou infrastrukturou,
+vede k vytvoření interního objektu v Logickeru. Použitá nfrastruktura
+se může lišit podle způsobu použití scriptu (checker/solver; displayer apod.)
+
+**1) grid
+Vytváření gridu sestává ze 3 typů operací:
+a) vytvoření Slotu
+b) vytvoření klíče ve Slotu s nějakou více či méně obecnou množinou přípustných hodnot
+c) zúžení množiny hodnot pro určitý klíč ve Slotu
+
+Z pohledu GridBuildera to vypadá trochu jinak. Nepoužívá operaci c), zato
+umí pár věcí navíc:
+d) načíst svou interní proměnnou z DataInputu, ověřit její validnost anebo použít default
+e) if, resp. switch; na základě hodnoty určité proměnné některé kroky přeskočit
+
+**2) constraints
+Constraint je složená transformace, jejíž typ je Grid -> bool. Transformace jsou
+ovšem různé, např. FilterIn a FilterOut, resp. Contents by měly silně profitovat
+ze syntaktických možností scriptovacího jazyka.
+
+**3) data
+Popis konkrétní úlohy; v podstatě kolekce proměnných, kterou Logicker umí interpretovat
+jako DataInput.
+
+
+Jak se bude používat grid script?
+Libovolný worker nemůže pracovat bez Gridu. Checker potřebuje Grid kompletně vyplněný,
+Solveru stačí zadání a Displayer akceptuje i úplně prázdný Grid. Checker má umět načítat
+Grid ze dvou sourců: v jednom je zadání se specifikací struktury Gridu, v druhém jsou
+hodnoty řešení. Tedy ten druhý source by se měl asi posílat už vytvořené instanci Gridu.
+
+Jak načítat values?
+S ohledem na Checkera se nezdá vhodné, aby načítání values bylo součástí grid scriptu,
+jelikož to teda musí umět vytvořený Grid, a to by se tedy mělo použít, ať je to na jednom místě.
+
+grid script má na vstupu DataInput; z něj tedy vytvoří Grid bez values, obecně bez některých
+dat, a tato data si pak Grid z téhož nebo jiného DataInputu má umět doplnit.
+Čili ano, grid script má vytvořit prázdný grid, načítání values, lépe řečeno operace c)
+není jeho starost, ani když tyto values jsou přítomny v DataInputu.
+
+
+Tedy bylo rozhodnuto, že grid, resp data v něm, budou ukládána tak, že pro každý podporovaný
+datový typ existuje vector, v němž jsou uloženy všechny v danou chvíli úloze známé hodnoty,
+a mapa je implementována jako int->int, kde inty jsou indexy do vectoru s klíči resp hodnotami.
+Při tomto způsobu je tedy hodnota v chai scriptu přítomna jako dvojice typeId, int, takto označení
+typu hodnoty a index do příslušného vectoru. Script dereferencování hodnoty neprovádí ani k tomu
+nemá prostředky.
+Logicker přirozeně dereferencování provádět musí, aby mohl vyhodnotit vztahy mezi hodnotami.
+Krucinální otázka teď zní, jak má vypadat typeId a jakým způsobem má dereferencování podporovat.
+TypeId je run-time hodnota. Konkrétní instanci, která reprezentuje určitý typ, si stanoví
+každý typ sám; je třeba zaručit, aby se dva různé typy reprezentovaly různými (nerovnajícími se) 
+instancemi. Všechny typeIds musí mít v nějakém smyslu stejný typ, aby šly uložit do stejné
+proměnné. Zde se zdá, že ale nebudu nikdy chtít hodnotu této proměnné po inicializaci měnit,
+takže vlastně nemusejí mít stejný typ. Ano, tady se někam dostáváme. Jsem totiž vcelku asi snadno
+vymyslet mechanismus, kterým runtime hodnotu typeId v chaiscriptu převedu na volání správně typované
+c++ metody, např. mám k dispozici scriptové funkce s guardama; pro každý typ jednu, která volá
+správně typovanou metodu v c++ a jsem hotov, nenarazím-li na komplikace při práci s mapou.
+Aha, tady se nabízí duální přístup k hodnotám, kdy ve scriptu je hodnota vždy dvojice viz výše,
+zatímco v c++ je hodnota vždy správně otypovaná hodnota. Hmm, ta druhá půlka asi není udržitelná.
+
+Při načítání hodnot, tj. parsování inputu

@@ -1,0 +1,48 @@
+Poučen z předchozích verzí 28.5.2022 píšu nové poznámky:
+
+1) Typ
+
+- Singleton
+- pojmenovaný typ reprezentovatelný jako integer
+- Set<Typ>
+- Sequence<Typ>
+
+- musí jít porovnat na rovnost
+- musí jít porovnat na větší/menší, má-li být použitelný jako klíč do mapy
+
+2) Grid
+- tree-like struktura; rootem je Singleton
+- potomky roota jsou všechny aspekty zadání úlohy, které mají charakter dat,
+    tj. nejen Grid samotný a třeba jeho okolí (hodnoty zadané pro jednotlivé směry),
+    ale třeba sestava lodí pro Battleships, počet polí zkraje obrazce pro Sudoku,
+    které má zadané součty těchto polí, a mnoho jiného
+- při kompilaci:
+    - node (uzel) ve stromu je pouze id a typ
+    - edge (hrana) ve stromu (identifikovatelná pomocí id koncového uzlu)
+        je prostě spojnice dvou uzlů
+- v run-time:
+    - node vlastně není užitečný (nemá smyslupně interpretovatelný význam)
+    - edge je mapa typ-počátečního-uzlu => typ-koncového uzlu
+
+- načítání dat
+    - ze streamu
+    - ze streamu jako key:value
+    - pro testy inicializovatelné hodnotami
+- chci to vytvářet pomocí metody, za použití syntaxe připomínající vytváření běžného
+    runtime stromu v nějaké knihovně; metoda vrací auto, jeho typ lze získat decltypem
+    a může to být rovnou typ, jejž lze instancializovat za účelem získání runtime Gridu
+
+3) Topologie
+- Rectangle, Square
+- hexa
+- triangle
+- irregular
+
+- některý Puzzly můžou mít topologii dopředu specifikovanou, buď zcela (Square 9x9) nebo
+    typem (Rectangle)
+- u řady Puzzlů nicméně připadá v úvahu mít volnější definici; typ Puzzlu totiž typicky
+    vypovídá o nějaké dominantní podmínce, která se Puzzlu týká, a Topologie může
+    být různá (Four winds vs Hexa four winds); v takovém případě pak ovšem Topologie
+    použitá při inicializaci Gridu musí mít vlastnosti, které potřebujou Constrainty
+- ale ježto není zatím jasno, jak ta Grid-making metoda bude vypadat a fungovat,
+    omezuju se prozatím na situaci, kdy typ Topologie zakomponuju do zmíněné metody 
