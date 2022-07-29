@@ -37,5 +37,5 @@ var size = read(Int, "size").default(type == irregular ? Int(1) : Int(9))
 puts(size.data);puts('\n');
 var fieldType = read(Set(Int), "fieldType").default(type == irregular ? Set(Int)() : Set(Int)(1, size))
 puts(fieldType.low);puts(", ");puts(fieldType.high);puts('\n')
-var areas = read(
+var areas = read(Set(Set(
 

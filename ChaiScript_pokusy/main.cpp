@@ -1,11 +1,31 @@
 #include "chaiscript/chaiscript.hpp"
+#include "worker.h"
 
 #include <iostream>
 #include <string>
+#include <utility>
 
 int main() {
   chaiscript::ChaiScript chai;
-  chai.eval_file("script.chai");
+  //1) Precist Reader.chai
+  chai.eval_file("reader.chai");
+  //2) Precist Puzzle.chai; ten obsahuje read() a conditions()
+  chai.eval_file("puzzle.chai");
+  //3) Precist Input.chai; ten obsahuje pro zacatek jeden DataInput
+  chai.eval_file("input.chai");
+  //4) zavolat read(); pomoci jedineho existjiciho Readera cte jediny existujici DataInput; kdyz skonci, obsahuje Reader inicializovany Grid
+  auto read = chai.eval<std::function<void()>>("read");
+  read();
+  //5) Inicializovat Workera; tj. treba bez ohledu na obsah conditions() vytvorit v Readeru prekladaci tabulky a dovedet se parametry pouziteho IntVarArray, pro zacatek pocet IntVars a jednu spolecnou max hodnotu domeny kazde IntVar
+  chai.add(chaiscript::bootstrap::standard_library::pair_type<std::pair<int, int>> ("PairInt"));
+  auto getInitWorkerData = chai.eval<std::function<std::pair<int, int>()>>("getInitWorkerData");
+  Worker worker(getInitWorkerData());
+  //6) Inicializovat constrainty jako ze scriptu volatelne c++ metody dle potreb konkretniho Workera
+  Worker::initConditions(chai);
+  //7) zavolat conditions(); ta vyhodnocuje podle stavu Gridu jednotlive transformace a pak zavola constrainty s vyhodnocenymi argumenty
+  auto conditions = chai.eval<std::function<void()>>("conditions");
+  //8) pustit workera
+  worker.solve();
 }
 
 /*double function(int i, double j) {

@@ -1,15 +1,3 @@
-def assert_equal(x, y)
-{
-  if (x == y)
-  {
-    // Passes
-  } else {
-    // Fails
-    print("assert_equal failure: got '" + to_string(y) + "' expected '" + to_string(x) + "'");
-    exit(-1);
-  }
-}
-
 class SudokuType {
   var data
 
@@ -37,7 +25,6 @@ class SudokuType {
   }
 }
 
-assert_equal(true, true);
 global classic = SudokuType("classic")
 global geometric = SudokuType("geometric")
 global irregular = SudokuType("irregular")
@@ -50,21 +37,151 @@ def readSudokuType(inputName) {
   }
 }
 
-class Topology {
-  def Topology(){}
+class TopologyType {
+  var data
 
-  def default(Topology t){
+  def TopologyType(){
+    this.data = 0
+  }
+  def TopologyType(string str) {
+    if ("rectangle" == str) {
+      this.data = 1;
+    } else {
+      throw ("bad topology type " + str)
+    }
+  }
+
+  def default(TopologyType t){
     return t
   }
 }
 
-global NoTopology = Topology()
-global Rectangle = Topology()
+//rozhodnuto, ze takovyto Topology objekt potrebuju zde mit,
+//nacist ho pomoci readTopology apod. a pote, po nacteni dalsich
+//nutnych hodnot, nejak pouzit k inicializaci topologie od Logickera
+//chci rict proted se tomu nechci na silu vyhybat, stejne vim zatim 
+//jen malo o tom, jak komunikace srcipt <-> Logicker bude presne vypadat
+global NoTopology = TopologyType()
+global Rectangle = TopologyType()
 
-def readTopology(inputName) {
+def readTopologyType(inputName) {
   return Rectangle
+}
+
+class Int {
+  var data
+
+  def Int(int a) {
+    this.data = a
+  }
+
+  def default(Int i) {
+    if (this.data == 0) {
+      this.data = i.data
+    }
+    return this
+  }
+}
+
+def readInt(inputName) {
+  return Int(0)
+}
+
+class IntSet {
+  var low
+  var high
+
+  def IntSet(int low, int high) {
+    this.low = low
+    this.high = high
+  }
+
+  def IntSet(int low, Int high) {
+    this.low = low
+    this.high = high.data
+  }
+
+  def default(IntSet is) {
+    if (this.low == 0) {
+      this.low = is.low 
+      this.high = is.high
+    }
+    return this
+  }
+}
+
+def readIntSet(inputName) {
+  return IntSet(0, 0)
+}
+
+//mno a resim, ze prinejmensim nektere hodnoty budou ulozeny v Logickerovych vectorech a script
+//je uvidi jakozto dvojice Typ, index; neni vylouceno, ze obdobnym zpusobem by slo pracovat i 
+//s hodnotami, ktere se vyskytnou pouze ve scriptu jako pomocne promenne. Tedy resme, co ma umet
+//takovy Typ.
+//1) Instance Typu podporuje metody create() a create(xx), jimiz se vytvareji (neinicializovane,
+//      resp. inicializovane) hodnoty toho typu.
+//2) Instance Typu podporuje metodu makeSlot(string keyId, string valueId), ktera vola
+//      Logickerovu metodu na zalozeni noveho Slotu; toto se tyka pouze Logickerovych Typu.
+//Na vstupu je Source, a ten muze mit dve podoby: scriptovou a Logickerovou. Scriptovy source
+//je heterogenni chai pole, takto mapa, kde klice jsou z definice stringy a hodnoty dle potreby.
+//Logickerovy source umoznuje scriptu nacist hodnotu Logickeroveho typu, snad volanim nejake
+//jednoduche metody, ktera by asi mela byt soucasti Type a vracet by mela uz primo nactenou
+//hodnotu anebo nejaky nullptr, pokud hodnota ve vstupu neni. Hm, to chce domyslet.
+//Poresme napred nacitani ze scriptoveho source a Logickerovej zkusme udelat analogicky.
+
+
+class Type {
+}
+
+class Value {
+  var type
+  var value
+}
+
+def read(Type type, string name) {
+  //zkusit precist "name" ze source, je legal, aby tam ta hodnota nebyla, v takovem pripade vracim
+  //  type.create() (default constructed hodnotu)
+  //pokud tam hodnota je, nazvu ji val a vracim type.create(val)
 }
 
 var type = readSudokuType("type").default(classic);
 puts(type.data);puts('\n');
-var topology = readTopology("topology").default(type == irregular ? NoTopology : Rectangle)
+var topologyType = readTopologyType("topologyType").default(type == irregular ? NoTopology : Rectangle)
+puts(topologyType.data);puts('\n');
+var size = readInt("size").default(type == irregular ? Int(1) : Int(9))
+puts(size.data);puts('\n');
+var fieldType = readIntSet("fieldType").default(type == irregular ? IntSet(0, 0) : IntSet(1, size))
+puts(fieldType.low);puts(", ");puts(fieldType.high);puts('\n')
+var areas
+
+//takhle se bude vytvaret input
+var m = ["a": "asd", "b": 2]
+var m1 = ["c": 3.2];
+m.insert(m1)
+puts(m["a"]);puts('\n');
+puts(m["b"]);puts('\n');
+puts(m["c"]);puts('\n');
+//kdyz klic v mape neni, asi se to musi resit odchycenim vyjimky, kterou cteni daneho klice zpusobi
+try{
+  puts(m["d"]);puts('\n');
+}catch(eval_error e) {
+  puts("exception"); puts('\n');
+}
+
+//ted sloty:
+//tohle se uz IMHO musi posilat rovnou Logickeru, tj. volat metody zvenku
+//cili necht existuje zvenku predana instance grid, obsahujici pro zacatek SlotPart GridId
+//plan je mit v Logickeru jeden vector pro kazdy podporovany datovy typ, do nej ukladat jednotlive zname (danemu gridu) hodnoty
+//kazdy slot je pak pojemnovana mapa ???int->int nebo int->std::set<int>???, kde jednotlive inty predstavuji indexy do tech poli
+
+//a jak s tim pracovat:
+//  Slot je specifikovan 3 udaji, id klice, id hodnoty a typ hodnoty; ids jsou stringy, typ je Type
+//  protoze Type je runtime instance, jeji soucasti ma byt metoda makeSlot(string, string), ktera 
+//    vola prislusnou cast z Logickera
+
+//pro Sudoku:
+//  vytvorit Slot GridId->FieldId a nechat topologii, at ho naplni
+//grid.addSlot(FieldId).fillBy(topology)
+//  vytvorit Slot FieldId->Value a naplnit z fieldType
+//  vytvorit Slot GridId->Areas a naplnit z areas
+

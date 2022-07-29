@@ -1,11 +1,17 @@
-Byly identifikovány 3 typy scriptů, které chci používat:
-1) grid -- jak vytvořit interní reprezentaci obrazce úlohy
-2) constraints -- jak posuzovat správnost vyplnění obrazce
-3) data -- vstupy specifické pro konkrétní zadání
-
-Každý script, pravděpodobně ve spolupráci s nějakou infrastrukturou,
-vede k vytvoření interního objektu v Logickeru. Použitá nfrastruktura
-se může lišit podle způsobu použití scriptu (checker/solver; displayer apod.)
+Byly identifikovány 4 typy scriptů, které chci používat:
+1) grid -- není to úplně script, je to specifikace datového
+    typu (stromu), který představuje grid, tj. dají se
+    do něj uložit všechna potřebná data, týkající se konkrétního
+    zadání úlohy
+2) conditions -- jak posuzovat správnost vyplnění obrazce
+    popis transformace, vedoucí z gridu toho typu, jak byl
+    popsán scriptem z bodu 1), na boolean
+3) data -- vstupy specifické pro konkrétní zadání; tento script
+    není součástí popisu typu úlohy, naopak obsahuje právě informace,
+    které jsou relevantní pro dané zadání a pro jiné úlohy stejného
+    typu nemají žádný význam
+4) jak číst vstup z bodu 3) a na základě dat z něj inicializovat
+    obsah instance gridu
 
 **1) grid
 Vytváření gridu sestává ze 3 typů operací:
@@ -18,8 +24,8 @@ umí pár věcí navíc:
 d) načíst svou interní proměnnou z DataInputu, ověřit její validnost anebo použít default
 e) if, resp. switch; na základě hodnoty určité proměnné některé kroky přeskočit
 
-**2) constraints
-Constraint je složená transformace, jejíž typ je Grid -> bool. Transformace jsou
+**2) conditions
+Condition je složená transformace, jejíž typ je Grid -> bool. Transformace jsou
 ovšem různé, např. FilterIn a FilterOut, resp. Contents by měly silně profitovat
 ze syntaktických možností scriptovacího jazyka.
 
@@ -38,12 +44,80 @@ Jak načítat values?
 S ohledem na Checkera se nezdá vhodné, aby načítání values bylo součástí grid scriptu,
 jelikož to teda musí umět vytvořený Grid, a to by se tedy mělo použít, ať je to na jednom místě.
 
+Tento odstavec není vhodně zformulovaný.
 grid script má na vstupu DataInput; z něj tedy vytvoří Grid bez values, obecně bez některých
 dat, a tato data si pak Grid z téhož nebo jiného DataInputu má umět doplnit.
 Čili ano, grid script má vytvořit prázdný grid, načítání values, lépe řečeno operace c)
 není jeho starost, ani když tyto values jsou přítomny v DataInputu.
 
 
+**********************************************
+Na počátku je DataInput; vstupy v nějakém persistovatelném formátu. Grid vznikne z jednoho nebo
+více DataInputů prostřednictvím GridBuildera. Předpoklad je, že GridBuilderů je řada druhů;
+který je vhodný pro danou úlohu se pozná podle *tvaru* stromu Slotů Gridu úlohy. Kromě tvaru
+jsou pro danou úlohu známé i typy hodnot, které se ukládají do jednotlivých slotů, tj. GridBuilder
+je v nějakém smyslu parametrizován typy hodnot; tato parametrizovaná verze GridBuildera je výstupem
+toho, čemu výše říkám grid script.
+
+Takže grid script mi určí instanci GridBuildera, ta má v sobě zadrátováno to "krokování", o němž
+jsem uvažoval pro popis načítání úloh; do instance se operatorem << posílají DataInputy, ona
+si v nich čte a inicializuje si své vnitřní proměnné (které mohou být i různě strukturované
+a docela složité; např. instance ví, že potřebuje topologii, ale jen takto obecně, konkrétnější
+podrobnosti ponechává své vnitřní proměnné TopologyBuilder apod.). Postupně si načte dostatek
+vstupů k tomu, aby byla schopna metodou build() vrátit čertsvě vytvořenou instanci Gridu, 
+odpovídající přečteným vstupům. 
+**********************************************
+Nebo by GridBuilder mohl být specifikován jako množina pojmenovaných vstupních hodnot, které
+je třeba načíst, aby bylo lze buildit, plus strom Slotů a jak jej ze známých vstupních hodnot
+inicializovat. To je asi zatím nejlepší plán.
+
+Vstupní hodnoty jdou z DataInputu jako stringy, GridBuilder je musí interpretovat. V případě
+Topologie je proces interpretování dosti involved, obnáší mj. to, že GridBuilderu přibudou
+dodatečné neznámé vstupní hodnoty. Vypadá to tedy na abstraktní Initializable (mj. předek GridBuildera), 
+což je množina InputValues; InputValue má jméno své, jméno v DataInputu a nějakej procesor, kterej 
+akceptuje String a vrátí nějakej výsledek. Ten procesor zároveň nějakým mechanismem může zaregistrovat 
+novou InputValue (včetně jejího procesíka).
+
+Zdá se, že procesík by měl vracet pair<bool, anything>; pokud bool je true, znamená to, že hodnota je úspěšně zpracovaná, a anything se uloží jako načtená hodnota (unless je to nullptr, ten se neuloží).
+
+Po načtení všech potřebných InputValues by GridBuilder, snad je to průchozí, měl být ve stavu,
+kdy dokáže instancializovat strom Slotů, jak ho má zadanej. 
+
+Jak se inicializuje single slot? Obecně lze říct, že do každý položky mapy Slotu chci napsat
+nalevo klíč, takto jednu konkrétní hodnotu určitého skalárního(?) typu; napravo pak můžu dát
+obecně větší množství skalárních hodnot v různém balení (množina možných hodnot, z nichž se 
+během řešení vybírá jedna správná; finální množina prvků, z nichž všechny jsou správně, jako např.
+CenterFieldIds na pravé straně Singletona; lze si snad představit "finální množinu" "množin
+možných hodnot"), toto větší množství je ale, snad je to průchozí, na konci inicializace Slotu
+vždy jednozačně určené a vyčíslitelné a tudíž toto větší množství lze vždy použít jako množinu
+klíčů pro případné navazující Sloty.
+
+Tedy inicializace Slotu má vypadat tak, že z parent Slotu seženu množinu všech možných hodnot
+klíčů a pro každou z nich založím v mapě řádek, na jehož pravou stranu dám v definici Slotu 
+popsanou Logickerovskou hodnotu; popis má být takového druhu, že GridBuilder na základě zpracovaných
+InputValues jej dokáže inicializovat.
+
+Není vždy možné znát kompletní hodnoty všech non-leaf Slotů při inicializaci Gridu; jinak řečeno 
+inicializace některých Slotů musí být provedena až při načítání zadání, nikoli při inicializaci;
+ještě jinak řečeno, ježto inicializace Slotu obecně vyžaduje znát hodnoty InputValues, které
+jsou součástí GridBuildera, není možné GridBuildera dealokovat dřív, než je zadání kompletně
+načtené; dále je zřejmo, že i Checker potřebuje data z GridBuildera používat a v plánu proto
+bylo pořebné hodnoty učinit součástí Gridu. Hmm.
+
+Takže čemu jsem říkal výše GridBuilder se od této chvíle jmenuje MetaData a načítání dělíme 
+do nejméně dvou fází: dokud nejsou komplet načtená MetaData, nelze inicializovat Sloty
+a načítat do nich hodnoty. MetaData pak jsou součástí zadání stejně jako Grid (Sloty);
+pro potřeby Checkeru tedy nově počítáme se třemi vstupy: MetaData, Grid zadání, Grid řešení.
+******************************************************
+Jinak řečeno jsem data ze vstpu rozdělil na dvě skupiny: meta, což jsou pojmenované skalární
+hodnoty, jejichž zpracování umožňuje hooky; a slot values, což jsou dvojice key:value, jež
+se prostě zapíšou do Slotu, a jejich parsování je v podstatě porovnávání stringů. !!Joj, to je
+pěkný, value input format jako mapa string->value!!
+******************************************************
+
+
+
+Zbytek možná už není aktuální.
 Tedy bylo rozhodnuto, že grid, resp data v něm, budou ukládána tak, že pro každý podporovaný
 datový typ existuje vector, v němž jsou uloženy všechny v danou chvíli úloze známé hodnoty,
 a mapa je implementována jako int->int, kde inty jsou indexy do vectoru s klíči resp hodnotami.
@@ -62,5 +136,3 @@ c++ metody, např. mám k dispozici scriptové funkce s guardama; pro každý ty
 správně typovanou metodu v c++ a jsem hotov, nenarazím-li na komplikace při práci s mapou.
 Aha, tady se nabízí duální přístup k hodnotám, kdy ve scriptu je hodnota vždy dvojice viz výše,
 zatímco v c++ je hodnota vždy správně otypovaná hodnota. Hmm, ta druhá půlka asi není udržitelná.
-
-Při načítání hodnot, tj. parsování inputu
